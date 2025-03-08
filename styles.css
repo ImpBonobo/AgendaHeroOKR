@@ -1,0 +1,912 @@
+/* AgendaHero Styles */
+
+/* Allgemeine Stile */
+.agenda-hero-loading {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.agenda-hero-error {
+    padding: 20px;
+    color: var(--text-error);
+    background-color: var(--background-modifier-error);
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+/* Kalender-Container */
+.agenda-hero-calendar-container {
+    height: 100%;
+    padding: 10px;
+    overflow: auto;
+}
+
+/* FullCalendar Anpassungen */
+.fc {
+    height: 100%;
+    font-family: var(--font-text);
+}
+
+.fc-toolbar-title {
+    font-size: 1.2em;
+    font-weight: 600;
+}
+
+.fc-header-toolbar {
+    margin-bottom: 0.5em;
+    padding: 0.5em;
+}
+
+.fc-col-header-cell {
+    background-color: var(--background-secondary);
+    font-weight: 600;
+}
+
+.fc-day-today {
+    background-color: rgba(255, 220, 40, 0.15) !important;
+}
+
+.fc-event {
+    border-radius: 4px !important;
+    padding: 2px 6px !important;
+    margin: 1px 2px !important;
+    border: none;
+    transition: transform 0.1s, box-shadow 0.1s;
+    cursor: pointer;
+    user-select: none;
+}
+
+.fc-event:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.fc-event:active {
+    cursor: grabbing;
+}
+
+.completed-task {
+    text-decoration: line-through !important;
+    opacity: 0.7 !important;
+}
+
+/* Prioritätsfarben (optional) */
+.priority-1 {
+    background-color: #ff5252 !important;
+    border-color: #ff5252 !important;
+}
+
+.priority-2 {
+    background-color: #ff9800 !important;
+    border-color: #ff9800 !important;
+}
+
+.priority-3 {
+    background-color: #4caf50 !important;
+    border-color: #4caf50 !important;
+}
+
+.priority-4 {
+    background-color: #2196f3 !important;
+    border-color: #2196f3 !important;
+}
+
+/* Verbesserte Drag & Drop-Styles */
+.drag-target-highlight {
+    background-color: rgba(66, 135, 245, 0.2) !important;
+    box-shadow: inset 0 0 0 2px #4287f5 !important;
+}
+
+/* Tasklisten-Stile */
+.agenda-hero-tasklist-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 10px;
+    background-color: var(--background-primary);
+    border-left: 1px solid var(--background-modifier-border);
+    overflow: hidden; /* Verhindert Überlauf */
+}
+
+/* Header-Stile */
+.agenda-hero-tasklist-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    margin-bottom: 10px;
+}
+
+.agenda-hero-tasklist-header h3 {
+    margin: 0;
+    font-size: 1.2em;
+    font-weight: 600;
+}
+
+.agenda-hero-view-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.agenda-hero-view-button {
+    padding: 4px 8px;
+    border-radius: 4px;
+    background-color: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    color: var(--text-normal);
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.agenda-hero-view-button:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+.agenda-hero-view-button.active {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+/* Filter-Stile */
+.agenda-hero-filters {
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    margin-bottom: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.agenda-hero-filters h3 {
+    margin: 0 0 10px 0;
+    font-size: 1em;
+    font-weight: 600;
+}
+
+.agenda-hero-filter-group {
+    margin-bottom: 8px;
+}
+
+.agenda-hero-filter-group label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.85em;
+    font-weight: 600;
+}
+
+.agenda-hero-filter-group select,
+.agenda-hero-filter-group input {
+    width: 100%;
+    padding: 6px;
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+    background-color: var(--background-primary);
+}
+
+/* Task-Liste */
+.agenda-hero-tasks {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+    max-height: calc(100% - 150px); /* Maximale Höhe begrenzen, um Platz für Header und Filter zu lassen */
+}
+
+.agenda-hero-task-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.agenda-hero-task-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 8px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    border: 1px solid var(--background-modifier-border);
+    background-color: var(--background-secondary);
+    cursor: grab;
+    transition: transform 0.1s, box-shadow 0.1s;
+    position: relative; /* Für absolute Positionierung der Aktionen */
+    min-height: 24px; /* Minimale Höhe für Checkbox und Text */
+}
+
+.agenda-hero-task-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.agenda-hero-task-item:active {
+    cursor: grabbing;
+}
+
+.agenda-hero-priority {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.agenda-hero-task-content-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* Verhindert Überlauf bei langen Texten */
+    margin: 0 8px;
+}
+
+.agenda-hero-task-content {
+    margin: 0;
+    word-break: break-word;
+    font-weight: 500;
+}
+
+.agenda-hero-task-content.agenda-hero-completed {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+.agenda-hero-due-date {
+    font-size: 0.8em;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.agenda-hero-task-actions {
+    display: flex;
+    gap: 4px;
+    margin-left: 8px;
+    flex-shrink: 0;
+}
+
+.agenda-hero-task-actions button {
+    font-size: 0.8em;
+    padding: 2px 6px;
+    background-color: var(--background-modifier-border);
+    border: none;
+    border-radius: 3px;
+    color: var(--text-normal);
+    cursor: pointer;
+}
+
+.agenda-hero-task-actions button:hover {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+/* Test-View-Stile */
+.agenda-hero-test-container {
+    padding: 20px;
+}
+
+.agenda-hero-test-content {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: var(--background-secondary);
+    border-radius: 5px;
+}
+
+.agenda-hero-test-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.agenda-hero-test-buttons button {
+    padding: 8px 12px;
+}
+
+/* Modal-Stile */
+.modal {
+    background-color: var(--background-primary);
+    border-radius: 5px;
+    padding: 20px;
+    max-height: 80vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.modal h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    padding-bottom: 10px;
+    position: sticky;
+    top: 0;
+    background-color: var(--background-primary);
+    z-index: 10;
+}
+
+.modal-content {
+    overflow-y: auto;
+    max-height: calc(80vh - 120px);
+    padding-right: 10px;
+}
+
+.agenda-hero-edit-form {
+    max-height: calc(80vh - 150px);
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.modal label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.modal input,
+.modal select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+    background-color: var(--background-primary);
+}
+
+.modal button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 8px;
+}
+
+.modal-footer {
+    position: sticky;
+    bottom: 0;
+    background-color: var(--background-primary);
+    padding-top: 10px;
+    border-top: 1px solid var(--background-modifier-border);
+    margin-top: 10px;
+    z-index: 10;
+}
+/* Verbesserte Drag & Drop-Styles für timeGrid */
+.fc-timegrid-slot {
+    min-height: 24px;
+    position: relative;
+}
+
+.fc-timegrid-event {
+    cursor: pointer;
+    user-select: none;
+}
+
+.agenda-hero-dragging .fc-timegrid-slot:hover {
+    background-color: rgba(66, 135, 245, 0.1);
+}
+
+/* Verbesserte Highlight-Styles */
+.drag-target-highlight.fc-timegrid-slot {
+    background-color: rgba(66, 135, 245, 0.2) !important;
+    box-shadow: inset 0 0 0 2px #4287f5 !important;
+}
+
+/* Verbesserte Tasklisten-Stile */
+.agenda-hero-task-project,
+.agenda-hero-task-due-date,
+.agenda-hero-task-priority-text,
+.agenda-hero-task-recurring,
+.agenda-hero-task-tags {
+    font-size: 0.8em;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.agenda-hero-task-tag {
+    background-color: var(--background-modifier-border);
+    padding: 1px 4px;
+    border-radius: 3px;
+    margin-right: 2px;
+}
+
+/* Drag & Drop zwischen Taskliste und Kalender */
+.agenda-hero-dragging-task {
+    cursor: grabbing !important;
+}
+
+.agenda-hero-calendar-drop-target {
+    box-shadow: inset 0 0 0 2px #4287f5 !important;
+    background-color: rgba(66, 135, 245, 0.05) !important;
+}
+
+/* Task-Bearbeitungsformular */
+.agenda-hero-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-group {
+    margin-bottom: 10px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.date-time-container {
+    display: flex;
+    gap: 10px;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.checkbox-container input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+.tag-checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tag-checkbox-container input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.preview-container {
+    background-color: var(--background-secondary);
+    padding: 10px;
+    border-radius: 4px;
+    font-family: monospace;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.button-container {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.submit-button {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+.cancel-button {
+    background-color: var(--background-modifier-border);
+}
+
+/* Anpassungen für die Taskliste als Seitenleiste */
+.workspace-split.mod-vertical .workspace-leaf .agenda-hero-tasklist-container {
+    width: 300px;
+    max-width: 300px;
+    border-right: 1px solid var(--background-modifier-border);
+}
+
+.workspace-split.mod-horizontal .workspace-leaf .agenda-hero-tasklist-container {
+    height: 300px;
+    max-height: 300px;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+/* Verbesserte Stile für die Checkbox und Aktionen */
+.agenda-hero-task-checkbox {
+    flex-shrink: 0;
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Stile für den Bearbeitungsmodus */
+.modal .checkbox-container {
+    margin-bottom: 15px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: var(--background-secondary);
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+}
+
+.modal .checkbox-container input[type="checkbox"] {
+    margin-right: 8px;
+    width: 20px !important;
+    height: 20px !important;
+    opacity: 1 !important;
+    cursor: pointer;
+    display: inline-block !important;
+    visibility: visible !important;
+    position: static !important;
+    -webkit-appearance: checkbox !important;
+    appearance: checkbox !important;
+}
+
+.modal .checkbox-container label {
+    margin-bottom: 0;
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--text-normal);
+}
+
+
+.agenda-hero-urgency-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+}
+
+.high-urgency {
+    background-color: #f44336;
+    box-shadow: 0 0 3px #f44336;
+}
+
+.medium-urgency {
+    background-color: #ff9800;
+}
+
+.low-urgency {
+    background-color: #4caf50;
+}
+
+/* OKR Hierarchy View Styles */
+.agenda-hero-okr-hierarchy-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 10px;
+    overflow: auto;
+}
+
+.agenda-hero-okr-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.agenda-hero-okr-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.agenda-hero-okr-button {
+    padding: 6px 12px;
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.agenda-hero-okr-hierarchy {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.agenda-hero-objective-container,
+.agenda-hero-kr-container,
+.agenda-hero-project-container {
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.agenda-hero-objective-header,
+.agenda-hero-kr-header,
+.agenda-hero-project-header {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: var(--background-secondary);
+    cursor: pointer;
+}
+
+.agenda-hero-objective-content,
+.agenda-hero-kr-content,
+.agenda-hero-project-content {
+    padding: 10px;
+    background-color: var(--background-primary);
+}
+
+.agenda-hero-expand-button {
+    width: 20px;
+    display: inline-block;
+    cursor: pointer;
+    text-align: center;
+}
+
+.agenda-hero-objective-title,
+.agenda-hero-kr-title,
+.agenda-hero-project-title {
+    margin: 0;
+    flex-grow: 1;
+}
+
+.agenda-hero-status-badge {
+    font-size: 0.8em;
+    padding: 2px 6px;
+    border-radius: 12px;
+    margin: 0 10px;
+    white-space: nowrap;
+}
+
+.agenda-hero-status-future {
+    background-color: #607d8b;
+    color: white;
+}
+
+.agenda-hero-status-next-up {
+    background-color: #2196f3;
+    color: white;
+}
+
+.agenda-hero-status-in-progress {
+    background-color: #ff9800;
+    color: white;
+}
+
+.agenda-hero-status-waiting-on {
+    background-color: #9c27b0;
+    color: white;
+}
+
+.agenda-hero-status-validating {
+    background-color: #009688;
+    color: white;
+}
+
+.agenda-hero-status-completed {
+    background-color: #4caf50;
+    color: white;
+}
+
+.agenda-hero-status-canceled {
+    background-color: #f44336;
+    color: white;
+}
+
+.agenda-hero-progress-container {
+    width: 100px;
+    height: 10px;
+    background-color: var(--background-modifier-border);
+    border-radius: 5px;
+    overflow: hidden;
+    margin: 0 10px;
+    position: relative;
+}
+
+.agenda-hero-progress-bar {
+    height: 100%;
+    background-color: var(--interactive-accent);
+}
+
+.agenda-hero-progress-text {
+    position: absolute;
+    top: -2px;
+    right: -30px;
+    font-size: 0.8em;
+    color: var(--text-muted);
+}
+
+.agenda-hero-button-container {
+    display: flex;
+    gap: 5px;
+}
+
+.agenda-hero-small-button {
+    padding: 3px 6px;
+    font-size: 0.7em;
+    background-color: var(--background-modifier-border);
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.agenda-hero-description {
+    font-style: italic;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+}
+
+.agenda-hero-date-range {
+    font-size: 0.8em;
+    color: var(--text-muted);
+}
+
+.agenda-hero-empty-message {
+    font-style: italic;
+    color: var(--text-muted);
+    text-align: center;
+    margin: 10px 0;
+}
+
+/* Task styling */
+.agenda-hero-task-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.agenda-hero-task-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 5px;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.agenda-hero-task-item:last-child {
+    border-bottom: none;
+}
+
+.agenda-hero-task-checkbox {
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.agenda-hero-task-content-container {
+    flex-grow: 1;
+}
+
+.agenda-hero-task-content {
+    word-break: break-word;
+}
+
+.agenda-hero-task-content.completed {
+    text-decoration: line-through;
+    color: var(--text-muted);
+}
+
+.agenda-hero-task-due-date {
+    font-size: 0.8em;
+    color: var(--text-muted);
+}
+
+.agenda-hero-task-actions {
+    margin-left: 8px;
+}
+
+/* OKR Modal Styles */
+.agenda-hero-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.agenda-hero-parent-info {
+    background-color: var(--background-secondary);
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.agenda-hero-parent-title {
+    margin: 0;
+    font-weight: 600;
+}
+
+.agenda-hero-modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.agenda-hero-metric-section,
+.agenda-hero-sprint-section,
+.agenda-hero-recurring-section,
+.agenda-hero-planning-section,
+.agenda-hero-windows-container {
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.agenda-hero-metric-section h3,
+.agenda-hero-sprint-section h3,
+.agenda-hero-planning-section h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1em;
+}
+
+/* Urgency indicators */
+.urgency-high {
+    border-left: 4px solid #ff0000 !important;
+}
+
+.urgency-medium {
+    border-left: 4px solid #ffa500 !important;
+}
+
+.urgency-low {
+    border-left: 4px solid #4caf50 !important;
+}
+
+/* Scheduling indicators */
+.auto-scheduled {
+    border-right: 4px solid #3f51b5 !important;
+}
+
+.manually-scheduled {
+    border-right: 4px solid #9c27b0 !important;
+}
+
+/* Conflict indicators */
+.schedule-conflict {
+    box-shadow: 0 0 0 2px #f44336 !important;
+}
+
+/* Time block styles */
+.fc-event.time-block {
+    opacity: 0.8;
+    border-radius: 2px !important;
+}
+
+.fc-event.time-block.completed {
+    background-image: linear-gradient(45deg, rgba(0,0,0,0.1) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1) 75%, transparent 75%, transparent) !important;
+    background-size: 8px 8px !important;
+}
+
+/* Scheduling controls */
+.agenda-hero-scheduling-controls {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+    flex-wrap: wrap;
+}
+
+.agenda-hero-scheduling-button {
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+    background-color: var(--background-secondary);
+    cursor: pointer;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.agenda-hero-scheduling-button:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+.agenda-hero-scheduling-tooltip {
+    position: fixed;
+    z-index: 9999;
+    background-color: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    padding: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    max-width: 300px;
+    font-size: 0.9em;
+}

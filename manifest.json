@@ -1,0 +1,10 @@
+{
+	"id": "agenda-hero",
+	"name": "AgendaHero",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "A powerful OKR-based task management plugin for Obsidian that combines strategic planning with intelligent time management. Supports Objectives, Key Results, Projects, and Tasks with flexible views (Calendar, Task List, Scrum Board) and smart prioritization and scheduling logic.",
+	"author": "Adrian Coman",
+	"authorUrl": "",
+	"isDesktopOnly": false
+  }
