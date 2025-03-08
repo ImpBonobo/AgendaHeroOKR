@@ -1,94 +1,134 @@
-# Obsidian Sample Plugin
+OKR TaskManager for Obsidian
+OKR TaskManager is a comprehensive productivity plugin for Obsidian that combines strategic OKR (Objectives and Key Results) methodology with powerful task management and intelligent scheduling. The plugin transforms Obsidian into a complete planning and organization tool suitable for both corporate strategic planning and personal productivity management.
+Features
+OKR Hierarchy and Data Model
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+Structured Hierarchy: Organize your work through Objectives, Key Results, Projects, and Tasks
+Clear Traceability: Track from strategic objectives down to individual tasks
+Progress Tracking: Automatic progress calculation at all levels of the hierarchy
+Tagging & Prioritization: Categorize and prioritize all elements in your workflow
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+Calendar and Time Management
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+Multi-view Calendar: View tasks in day, week, and month views
+Drag & Drop Interface: Easily reschedule tasks with intuitive controls
+Intelligent Scheduling System:
 
-## First time developing plugins?
+Automatic task distribution into time blocks
+Priority-based scheduling with deadline awareness
+Configurable time windows for different activity types
+Automatic conflict resolution
 
-Quick starting guide for new plugin devs:
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
 
-## Releasing new releases
+Multiple Views
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+Calendar View: Visualize tasks with color-coding by project, priority, or category
+Task List View: Filter and sort tasks by various criteria
+Scrum Board View: Organize tasks by status for sprint-based workflows
+OKR Hierarchy View: Navigate through your entire OKR structure
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+Customization Options
 
-## Adding your plugin to the community plugin list
+Configurable Folders: Define where OKR elements are stored
+Custom Task Statuses: Create and customize your workflow states
+Personalized Time Windows: Define when certain task types can be scheduled
+Custom Attributes: Add your own metadata to any OKR element
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+Additional Capabilities
 
-## How to use
+Sprint Management: Create and manage time-boxed work iterations
+Markdown Integration: Import tasks from regular Markdown files
+Analysis Tools: Track productivity patterns and OKR progress over time
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+Installation
+From Obsidian Community Plugins
 
-## Manually installing the plugin
+Open Obsidian and go to Settings
+Navigate to "Community plugins" and turn off "Restricted mode"
+Click "Browse" and search for "OKR TaskManager"
+Click "Install"
+After installation, enable the plugin
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+Manual Installation
 
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
+Download the latest release from the GitHub releases page
+Extract the files to your Obsidian plugins folder: .obsidian/plugins/obsidian-okr-taskmanager/
+Restart Obsidian and enable the plugin in Settings → Community plugins
 
-## Funding URL
+Usage
+Getting Started
 
-You can include funding URLs where people who use your plugin can financially support it.
+Open the Command Palette (Ctrl/Cmd + P) and run "OKR TaskManager: Create New Objective"
+Fill in the details for your first objective
+Add key results to track progress toward your objective
+Create projects to organize related work
+Add tasks to your projects
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
+Calendar Usage
 
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
-```
+View the calendar by clicking the calendar icon in the ribbon or running "OKR TaskManager: Open Calendar View"
+Create new tasks by clicking on a date
+Drag and drop tasks to reschedule them
+Toggle between day, week, and month views using the buttons at the top
 
-If you have multiple URLs, you can also do:
+Task Management
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
+Create tasks from the calendar, task list, or directly in a project
+Set due dates, priorities, and estimated duration
+Enable auto-scheduling for intelligent time block allocation
+Mark tasks as completed to update progress up the OKR hierarchy
 
-## API Documentation
+OKR Hierarchy Navigation
 
-See https://github.com/obsidianmd/obsidian-api
+Navigate your entire OKR structure from the hierarchy view
+Expand/collapse sections to focus on relevant information
+Track progress with visual indicators at each level
+Add new elements directly from this view
+
+Configuration
+Access plugin settings via Obsidian Settings → OKR TaskManager:
+General Settings
+
+Default View: Choose which view opens by default
+Start Day of Week: Set calendar week start day
+Working Hours: Define your standard working hours for scheduling
+
+Folder Structure
+
+Objectives Folder: Where objective files are stored
+Key Results Folder: Where key result files are stored
+Projects Folder: Where project files are stored
+Sprints Folder: Where sprint files are stored
+
+Time Windows
+
+Create and customize time windows for different types of activities
+Set availability hours for each window
+Associate task types with specific windows
+
+Task Statuses
+
+Customize the available task statuses
+Set order and visualization preferences
+Define which statuses mark tasks as completed
+
+Keyboard Shortcuts
+
+Ctrl/Cmd + Alt + C: Open Calendar View
+Ctrl/Cmd + Alt + T: Open Task List View
+Ctrl/Cmd + Alt + S: Open Scrum Board View
+Ctrl/Cmd + Alt + O: Open OKR Hierarchy View
+Ctrl/Cmd + Alt + N: Create New Task
+
+Contributing
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+Fork the repository
+Create your feature branch: git checkout -b feature/amazing-feature
+Commit your changes: git commit -m 'Add some amazing feature'
+Push to the branch: git push origin feature/amazing-feature
+Open a Pull Request
+
+License
+This project is licensed under the MIT License - see the LICENSE file for details.
