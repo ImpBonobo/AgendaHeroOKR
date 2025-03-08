@@ -5,6 +5,6 @@
 	"minAppVersion": "0.15.0",
 	"description": "A powerful OKR-based task management plugin for Obsidian that combines strategic planning with intelligent time management. Supports Objectives, Key Results, Projects, and Tasks with flexible views (Calendar, Task List, Scrum Board) and smart prioritization and scheduling logic.",
 	"author": "Adrian Coman",
-	"authorUrl": "",
+	"authorUrl": "https://github.com/ImpBonobo?tab=repositories",
 	"isDesktopOnly": false
   }

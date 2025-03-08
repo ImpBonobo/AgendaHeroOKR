@@ -66,6 +66,27 @@ export class ScrumBoardView extends ItemView {
         const titleContainer = this.headerContainer.createDiv({ cls: 'agenda-hero-scrumboard-title-container' });
         titleContainer.createEl('h3', { text: 'Scrum Board' });
         
+        // sprint info
+        if (this.currentBoard) {
+            const sprintInfo = titleContainer.createEl('div', { 
+                cls: 'agenda-hero-sprint-info',
+                text: `Sprint: ${this.currentBoard.title} (${this.currentBoard.startDate.toLocaleDateString()} - ${this.currentBoard.endDate.toLocaleDateString()})`
+            });
+            sprintInfo.style.fontSize = "0.9em";
+            sprintInfo.style.color = "var(--text-muted)";
+        }
+
+        // Create back button
+        const backButton = titleContainer.createEl('button', {
+            text: 'Back to Calendar',
+            cls: 'agenda-hero-back-button'
+        });
+        backButton.style.marginLeft = "10px";
+        backButton.addEventListener('click', () => {
+            // Open calendar view
+            this.plugin.activateView('agenda-hero-calendar');
+        });
+
         // Create board controls
         const controlsContainer = this.headerContainer.createDiv({ cls: 'agenda-hero-scrumboard-controls' });
         
@@ -171,6 +192,13 @@ export class ScrumBoardView extends ItemView {
         // Clear columns container
         this.columnsContainer.empty();
         
+        // Add flex container style
+        this.columnsContainer.style.display = "flex";
+        this.columnsContainer.style.flexDirection = "row";
+        this.columnsContainer.style.gap = "15px";
+        this.columnsContainer.style.height = "100%";
+        this.columnsContainer.style.overflowX = "auto";
+        
         // Render each visible column
         this.columns.forEach(column => {
             if (column.visible) {
@@ -186,6 +214,15 @@ export class ScrumBoardView extends ItemView {
             attr: { 'data-column-id': column.id }
         });
         
+        // Add column styles
+        columnContainer.style.width = "250px";
+        columnContainer.style.minWidth = "250px";
+        columnContainer.style.display = "flex";
+        columnContainer.style.flexDirection = "column";
+        columnContainer.style.backgroundColor = "var(--background-secondary-alt)";
+        columnContainer.style.borderRadius = "4px";
+        columnContainer.style.height = "100%";
+        
         // Create column header
         const columnHeader = columnContainer.createDiv({ cls: 'agenda-hero-column-header' });
         columnHeader.createEl('h4', { text: column.title });
@@ -195,6 +232,11 @@ export class ScrumBoardView extends ItemView {
             cls: 'agenda-hero-column-tasks',
             attr: { 'data-column-id': column.id }
         });
+        
+        // Add styles to make it scrollable
+        taskListContainer.style.flexGrow = "1";
+        taskListContainer.style.overflowY = "auto";
+        taskListContainer.style.padding = "10px";
         
         // Filter tasks for this column
         const columnTasks = this.getTasksForColumn(column);
@@ -323,42 +365,93 @@ export class ScrumBoardView extends ItemView {
     }
     
     initDragAndDrop() {
+        // Clean up any existing drake instance
+        if (this.drake) {
+            this.drake.destroy();
+        }
+        
         // Get all column task containers
         const containers = Array.from(
             this.columnsContainer.querySelectorAll('.agenda-hero-column-tasks')
         );
         
-        // Initialize Dragula
-        this.drake = dragula(containers, {
-            moves: (el: HTMLElement) => {
-                return el.classList.contains('agenda-hero-task-item');
-            },
-            accepts: (el: HTMLElement, target: HTMLElement) => {
-                return true; // Accept drops in any column
-            }
-        });
+        if (containers.length === 0) {
+            console.log('No containers found for drag and drop');
+            return;
+        }
         
-        // Handle drop events
-        this.drake.on('drop', (el: HTMLElement, target: HTMLElement, source: HTMLElement, sibling: HTMLElement) => {
-            // Get task ID and column ID
-            const taskId = el.getAttribute('data-task-id');
-            const columnId = target.getAttribute('data-column-id');
+        // Initialize Dragula
+        try {
+            this.drake = dragula(containers as any, {
+                moves: (el, container, handle, sibling) => {
+                    // Only allow dragging task items
+                    return el ? el.classList.contains('agenda-hero-task-item') : false;
+                },
+                accepts: (el, target, source, sibling) => {
+                    // Allow dropping in any column
+                    return el && target ? true : false;
+                },
+                revertOnSpill: true // Return to original position if dropped outside
+            });
             
-            if (!taskId || !columnId) return;
+            // Handle drop events
+            this.drake.on('drop', (el, target, source, sibling) => {
+                if (!el || !target) return;
+                
+                // Get task ID and column ID
+                const taskId = el.getAttribute('data-task-id');
+                const columnId = target.getAttribute('data-column-id');
+                
+                if (!taskId || !columnId) {
+                    console.log('Missing task or column ID for drag and drop');
+                    return;
+                }
+                
+                // Find task
+                const task = this.plugin.okrService.getTask(taskId);
+                if (!task) {
+                    console.log('Task not found:', taskId);
+                    return;
+                }
+                
+                // Update task status based on column
+                const newStatus = this.getStatusFromColumnId(columnId);
+                if (task.status !== newStatus) {
+                    task.status = newStatus as any; // Type assertion to bypass type checking
+                    
+                    // Update completed status
+                    task.completed = (newStatus === 'completed' || newStatus === 'canceled');
+                    
+                    // Update task
+                    this.plugin.okrService.updateTask(task)
+                        .then(() => {
+                            new Notice(`Task moved to ${this.getColumnTitle(columnId)}`);
+                        })
+                        .catch(error => {
+                            console.error('Error updating task:', error);
+                            new Notice('Error updating task status');
+                            this.renderBoard(); // Re-render to reset position
+                        });
+                }
+            });
             
-            // Find task
-            const task = this.plugin.tasks.find(t => t.id === taskId);
-            if (!task) return;
-            
-            // Update task status based on column
-            this.updateTaskStatus(task, columnId);
-            
-            // Update task in file
-            this.plugin.updateTaskInFile(task);
-            
-            // Show notification
-            new Notice(`Task moved to ${this.getColumnTitle(columnId)}`);
-        });
+            console.log('Drag and drop initialized successfully');
+        } catch (error) {
+            console.error('Error initializing drag and drop:', error);
+        }
+    }
+
+    // Helper method to map column IDs to task statuses
+    getStatusFromColumnId(columnId: string): string {
+        switch (columnId) {
+            case 'next-up': return 'next-up';
+            case 'in-progress': return 'in-progress';
+            case 'waiting-on': return 'waiting-on';
+            case 'validating': return 'validating';
+            case 'completed': return 'completed';
+            case 'canceled': return 'canceled';
+            default: return 'next-up';
+        }
     }
     
     updateTaskStatus(task: Task, columnId: string) {

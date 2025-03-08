@@ -40,6 +40,37 @@ export class TaskListView extends MarkdownView {
         this.headerContainer = this.container.createDiv({ cls: 'agenda-hero-tasklist-header' });
         this.headerContainer.createEl('h3', { text: 'Tasks' });
         
+        // Add view navigation
+        const navContainer = this.headerContainer.createDiv({ 
+            cls: 'agenda-hero-view-navigation' 
+        });
+
+        // Calendar View button
+        const calendarButton = navContainer.createEl('button', {
+            text: 'Calendar View',
+            cls: 'agenda-hero-view-button'
+        });
+        calendarButton.style.marginRight = '10px';
+        calendarButton.addEventListener('click', () => {
+            this.plugin.activateView('agenda-hero-calendar');
+        });
+
+        // Tasklist View button (current)
+        const tasklistButton = navContainer.createEl('button', {
+            text: 'Task List',
+            cls: 'agenda-hero-view-button active'
+        });
+        tasklistButton.style.marginRight = '10px';
+
+        // Scrumboard View button
+        const scrumboardButton = navContainer.createEl('button', {
+            text: 'Scrum Board',
+            cls: 'agenda-hero-view-button'
+        });
+        scrumboardButton.addEventListener('click', () => {
+            this.plugin.activateView('agenda-hero-scrumboard');
+        });
+
         // Buttons for different views
         const viewButtons = this.headerContainer.createDiv({ cls: 'agenda-hero-view-buttons' });
         

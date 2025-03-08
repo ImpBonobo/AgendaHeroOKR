@@ -5,9 +5,12 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import AgendaHeroPlugin from '../../main';
-import { Task, OkrStatus } from '../models/okr-models';
+import { Task } from '../../main';
+import { OkrStatus } from '../models/okr-models';
 import { OkrService } from '../services/okr-service';
 import { TimeBlockInfo } from '../utils/time-manager';
+
+
 
 export class CalendarView extends ItemView {
     plugin: AgendaHeroPlugin;
@@ -26,6 +29,45 @@ export class CalendarView extends ItemView {
             plugin.okrService = this.okrService;
         }
     }
+
+    // Adapter for converting between Task types
+private adaptMainTaskToOkrTask(task: any): any {
+    return {
+        id: task.id,
+        title: task.title || task.content,
+        description: task.description,
+        status: task.status || 'next-up',
+        priority: task.priority,
+        dueDate: task.dueDate,
+        projectId: task.projectId || '',
+        completed: task.completed,
+        estimatedDuration: task.estimatedDuration,
+        autoSchedule: task.autoSchedule,
+        urgency: task.urgency,
+        conflictBehavior: task.conflictBehavior,
+        creationDate: task.creationDate
+    };
+}
+
+// Adapter for converting OKR tasks to main tasks
+private adaptOkrTaskToMainTask(task: any): any {
+    return {
+        id: task.id,
+        title: task.title,
+        content: task.title || '',
+        description: task.description,
+        status: task.status,
+        priority: task.priority,
+        dueDate: task.dueDate,
+        projectId: task.projectId,
+        completed: task.completed,
+        estimatedDuration: task.estimatedDuration,
+        creationDate: task.creationDate || new Date(),
+        sourcePath: '',
+        recurring: false,
+        tags: []
+    };
+}
 
     getViewType(): string {
         return 'agenda-hero-calendar';
@@ -46,6 +88,10 @@ export class CalendarView extends ItemView {
         // Add scheduling controls
     const controlsContainer = this.containerEl.createDiv({ 
         cls: 'agenda-hero-scheduling-controls' 
+
+    
+
+        
     });
     controlsContainer.style.margin = '10px 20px';
 
@@ -74,6 +120,38 @@ export class CalendarView extends ItemView {
     });
     resolveConflictsButton.addEventListener('click', () => {
         this.resolveSchedulingConflicts();
+    });
+
+    // Add view navigation
+    const navContainer = this.containerEl.createDiv({ 
+        cls: 'agenda-hero-view-navigation' 
+    });
+    navContainer.style.margin = '10px 20px';
+
+    // Calendar View button (current)
+    const calendarButton = navContainer.createEl('button', {
+        text: 'Calendar View',
+        cls: 'agenda-hero-view-button active'
+    });
+    calendarButton.style.marginRight = '10px';
+
+    // Tasklist View button
+    const tasklistButton = navContainer.createEl('button', {
+        text: 'Task List',
+        cls: 'agenda-hero-view-button'
+    });
+    tasklistButton.style.marginRight = '10px';
+    tasklistButton.addEventListener('click', () => {
+        this.plugin.activateView('agenda-hero-tasklist');
+    });
+
+    // Scrumboard View button
+    const scrumboardButton = navContainer.createEl('button', {
+        text: 'Scrum Board',
+        cls: 'agenda-hero-view-button'
+    });
+    scrumboardButton.addEventListener('click', () => {
+        this.plugin.activateView('agenda-hero-scrumboard');
     });
 
         // Display status text
@@ -138,7 +216,7 @@ export class CalendarView extends ItemView {
                             this.editTask(itemId);
                         }
                     });
-
+                
                     // Add hover behavior for tooltips
                     info.el.addEventListener('mouseenter', (e) => {
                         this.showEventTooltip(info.event, e);
@@ -147,7 +225,7 @@ export class CalendarView extends ItemView {
                     info.el.addEventListener('mouseleave', () => {
                         this.hideEventTooltip();
                     });
-
+                
                     // Identify if it's a task or time block
                     if (itemId.startsWith('block-')) {
                         // It's a time block - add class for styling
@@ -159,8 +237,15 @@ export class CalendarView extends ItemView {
                             info.el.classList.add('completed');
                         }
                     } else {
-                        // It's a main task
-                        const task = this.okrService.getTask(itemId);
+                        // It's a main task - try to find from either OKR service or plugin tasks
+                        let task;
+                        try {
+                            task = this.okrService.getTask(itemId);
+                        } catch (err) {
+                            // Try plugin tasks instead
+                            task = this.plugin.tasks.find(t => t.id === itemId);
+                        }
+                        
                         if (task) {
                             // Add styling based on urgency
                             if (task.urgency !== undefined) {
@@ -180,10 +265,14 @@ export class CalendarView extends ItemView {
                                     info.el.classList.add('manually-scheduled');
                                 }
                                 
-                                // Check for scheduling conflicts
-                                const hasConflicts = this.hasSchedulingConflicts(task);
-                                if (hasConflicts) {
-                                    info.el.classList.add('schedule-conflict');
+                                // Check for scheduling conflicts (safely)
+                                try {
+                                    const hasConflicts = this.hasSchedulingConflicts(task);
+                                    if (hasConflicts) {
+                                        info.el.classList.add('schedule-conflict');
+                                    }
+                                } catch (err) {
+                                    console.warn("Error checking scheduling conflicts:", err);
                                 }
                             }
                             
@@ -322,8 +411,18 @@ export class CalendarView extends ItemView {
         const events: EventInput[] = [];
         
         try {
-            // Get tasks from OKR service
-            const tasks = this.okrService.getTasks();
+            // First try to get tasks from OKR service
+            let okrTasks = this.okrService.getTasks();
+            let tasks: any[] = [];
+            
+            // If no tasks from OKR service, fall back to plugin tasks
+            if (!okrTasks || okrTasks.length === 0) {
+                console.log("No tasks from OKR service, using plugin tasks");
+                tasks = this.plugin.tasks;
+            } else {
+                tasks = okrTasks;
+            }
+            
             console.log(`Creating events from ${tasks.length} tasks`);
             
             // Projects and their colors
@@ -344,11 +443,15 @@ export class CalendarView extends ItemView {
             ];
             
             // Collect all projects and assign colors
-            const projects = this.okrService.getProjects();
-            projects.forEach((project, index) => {
-                const colorIndex = index % colorPalette.length;
-                projectColors.set(project.id, colorPalette[colorIndex]);
-            });
+            try {
+                const projects = this.okrService.getProjects();
+                projects.forEach((project, index) => {
+                    const colorIndex = index % colorPalette.length;
+                    projectColors.set(project.id, colorPalette[colorIndex]);
+                });
+            } catch (err) {
+                console.log("Error getting projects:", err);
+            }
             
             // Add tasks as events
             tasks.forEach(task => {
@@ -366,14 +469,15 @@ export class CalendarView extends ItemView {
                         backgroundColor = projectColors.get(task.projectId);
                         borderColor = backgroundColor;
                     } else {
-                        backgroundColor = priorityColors[task.priority - 1];
+                        const priorityIndex = Math.min(Math.max((task.priority || 3) - 1, 0), 3);
+                        backgroundColor = priorityColors[priorityIndex];
                         borderColor = backgroundColor;
                     }
                     
                     // Create event and add to array
                     events.push({
                         id: task.id,
-                        title: task.title,
+                        title: task.title || task.content || "Untitled Task",
                         start: task.dueDate.toISOString(), // ISO string format for compatibility
                         allDay: !hasTime, // Only all day if no time specified
                         backgroundColor: backgroundColor,
@@ -390,42 +494,46 @@ export class CalendarView extends ItemView {
                 }
             });
             
-            // Add time blocks as events
-            const now = new Date();
-            const calendarStart = this.calendar ? new Date(this.calendar.view.activeStart) : new Date(now.getFullYear(), now.getMonth(), 1);
-            const calendarEnd = this.calendar ? new Date(this.calendar.view.activeEnd) : new Date(now.getFullYear(), now.getMonth() + 1, 0);
-            
-            // Get time blocks for the visible range
-            const timeBlocks = this.okrService.getTimeBlocksInRange(calendarStart, calendarEnd);
-            
-            // Save time blocks for later use
-            this.timeBlocks = timeBlocks;
-            
-            timeBlocks.forEach(block => {
-                // Find associated task
-                const task = this.okrService.getTask(block.taskId);
-                if (!task) return; // Skip if task not found
+            // Add time blocks as events (if available)
+            try {
+                const now = new Date();
+                const calendarStart = this.calendar ? new Date(this.calendar.view.activeStart) : new Date(now.getFullYear(), now.getMonth(), 1);
+                const calendarEnd = this.calendar ? new Date(this.calendar.view.activeEnd) : new Date(now.getFullYear(), now.getMonth() + 1, 0);
                 
-                // Color based on time window
-                let blockColor = '#7986cb'; // Default color
+                // Get time blocks for the visible range
+                const timeBlocks = this.okrService.getTimeBlocksInRange(calendarStart, calendarEnd);
                 
-                // Create event for time block
-                events.push({
-                    id: block.id,
-                    title: `${task.title} (${block.duration}m)`,
-                    start: block.start.toISOString(),
-                    end: block.end.toISOString(),
-                    backgroundColor: blockColor,
-                    borderColor: blockColor,
-                    textColor: '#ffffff',
-                    className: block.isCompleted ? 'completed-task' : '',
-                    extendedProps: {
-                        type: 'timeBlock',
-                        taskId: block.taskId,
-                        timeWindowId: block.timeWindowId
-                    }
+                // Save time blocks for later use
+                this.timeBlocks = timeBlocks;
+                
+                timeBlocks.forEach(block => {
+                    // Find associated task
+                    const task = this.okrService.getTask(block.taskId);
+                    if (!task) return; // Skip if task not found
+                    
+                    // Color based on time window
+                    let blockColor = '#7986cb'; // Default color
+                    
+                    // Create event for time block
+                    events.push({
+                        id: block.id,
+                        title: `${task.title} (${block.duration}m)`,
+                        start: block.start.toISOString(),
+                        end: block.end.toISOString(),
+                        backgroundColor: blockColor,
+                        borderColor: blockColor,
+                        textColor: '#ffffff',
+                        className: block.isCompleted ? 'completed-task' : '',
+                        extendedProps: {
+                            type: 'timeBlock',
+                            taskId: block.taskId,
+                            timeWindowId: block.timeWindowId
+                        }
+                    });
                 });
-            });
+            } catch (blockError) {
+                console.error("Error loading time blocks:", blockError);
+            }
             
             console.log(`${events.length} events created`);
             return events;
@@ -433,6 +541,12 @@ export class CalendarView extends ItemView {
             console.error("Error creating events from OKR model:", error);
             return [];
         }
+    }
+
+        // Helper method to get color from priority
+    private getPriorityColor(priority: number): string {
+        const priorityColors = ['#ff5252', '#ff9800', '#4caf50', '#2196f3'];
+        return priorityColors[Math.min(priority - 1, priorityColors.length - 1)];
     }
     
     updateEvents() {
@@ -458,70 +572,127 @@ export class CalendarView extends ItemView {
     
     // Method to edit a task
     editTask(taskId: string) {
-        const task = this.okrService.getTask(taskId);
-        
-        if (task) {
-            const modal = new TaskEditModal(this.app, task, (updatedTask) => {
-                // Update task in the OKR model
-                this.okrService.updateTask(updatedTask);
-                
-                // Notification
-                new Notice('Task updated');
-            });
+        try {
+            // First try to get the task from OKR service
+            let task: any;
             
-            modal.open();
-        } else {
-            new Notice('Task not found');
-        }
-    }
-    
-    // Method to edit a time block
-    editTimeBlock(blockId: string) {
-        // Find the time block
-        const blocks = this.okrService.getTimeBlocksInRange(
-            new Date(0), // Start of time
-            new Date(8640000000000000) // End of time
-        );
-        
-        const block = blocks.find(b => b.id === blockId);
-        
-        if (block) {
-            // Find associated task
-            const task = this.okrService.getTask(block.taskId);
+            try {
+                task = this.okrService.getTask(taskId);
+            } catch (err) {
+                console.warn("Error getting task from OKR service:", err);
+            }
+            
+            if (!task) {
+                // Try to find in plugin tasks
+                task = this.plugin.tasks.find(t => t.id === taskId);
+            }
             
             if (task) {
-                // Show options for the time block
-                const modal = new TimeBlockModal(this.app, block, task, this.okrService);
+                const modal = new TaskEditModal(this.app, task, (updatedTask) => {
+                    try {
+                        // First try to update in OKR service
+                        this.okrService.updateTask(updatedTask);
+                    } catch (err) {
+                        console.warn('OKR service could not update task:', err);
+                        
+                        // Fall back to plugin's task update
+                        const pluginTask = this.plugin.tasks.find(t => t.id === taskId);
+                        if (pluginTask) {
+                            Object.assign(pluginTask, updatedTask);
+                            this.plugin.updateTaskInFile(updatedTask);
+                        }
+                    }
+                    
+                    // Notification
+                    new Notice('Task updated');
+                    
+                    // Update calendar
+                    this.updateEvents();
+                });
+                
                 modal.open();
             } else {
-                new Notice('Associated task not found');
+                new Notice('Task not found');
             }
-        } else {
-            new Notice('Time block not found');
+        } catch (error) {
+            console.error('Error editing task:', error);
+            new Notice(`Error editing task: ${error.message}`);
+        }
+    }
+    // Method to edit a time block
+    editTimeBlock(blockId: string) {
+        try {
+            // Find the time block
+            const blocks = this.okrService.getTimeBlocksInRange(
+                new Date(0), // Start of time
+                new Date(8640000000000000) // End of time
+            );
+            
+            const block = blocks.find(b => b.id === blockId);
+            
+            if (block) {
+                // Find associated task
+                const task = this.okrService.getTask(block.taskId);
+                
+                if (task) {
+                    // Show options for the time block
+                    const modal = new TimeBlockModal(this.app, block, task, this.okrService);
+                    modal.open();
+                } else {
+                    new Notice('Associated task not found');
+                }
+            } else {
+                new Notice('Time block not found');
+            }
+        } catch (error) {
+            console.error('Error editing time block:', error);
+            new Notice(`Error editing time block: ${error.message}`);
         }
     }
     
     // Method to create a new task
     createNewTask(date: Date) {
-        // Get the current sprint if any
-        const currentSprint = this.okrService.getCurrentSprint();
-        
-        // Create new task modal
-        const modal = new TaskCreateModal(this.app, date, (newTask) => {
-            // Add to OKR model
-            this.okrService.createTask(newTask);
+        try {
+            // Create new task modal
+            const modal = new TaskCreateModal(this.app, date, async (newTask: any) => {
+                try {
+                    // Process date and time
+                    if (newTask.dueDate) {
+                        // Add task to OKR model (try)
+                        try {
+                            // Convert to compatible format if needed
+                            const taskForService: any = { ...newTask };
+                            // Ensure required fields
+                            if (taskForService.projectId === undefined) {
+                                taskForService.projectId = '';
+                            }
+                            
+                            await this.okrService.createTask(taskForService);
+                        } catch (err) {
+                            console.warn('OKR service could not create task:', err);
+                            // Fall back to plugin's task creation
+                            this.plugin.tasks.push(newTask);
+                            this.plugin.notifyTasksUpdated();
+                        }
+                    }
+                    
+                    // Notification
+                    new Notice(`New task created for ${date.toLocaleDateString()}`);
+                    
+                    // Update calendar
+                    this.updateEvents();
+                    
+                } catch (err) {
+                    console.error('Error creating task:', err);
+                    new Notice(`Error creating task: ${err.message}`);
+                }
+            }, this.okrService);
             
-            // Add to current sprint if available
-            if (currentSprint && newTask.projectId) {
-                currentSprint.tasks.push(newTask);
-                this.okrService.updateSprint(currentSprint);
-            }
-            
-            // Notification
-            new Notice(`New task created for ${date.toLocaleDateString()}`);
-        }, this.okrService);
-        
-        modal.open();
+            modal.open();
+        } catch (error) {
+            console.error('Error creating new task:', error);
+            new Notice(`Error creating task: ${error.message}`);
+        }
     }
     
     // Custom drag & drop behavior
@@ -1019,7 +1190,7 @@ export class CalendarView extends ItemView {
             }
             
             // Sort by priority and urgency
-            tasksWithConflicts.sort((a, b) => {
+            tasksWithConflicts.sort((a: any, b: any) => {
                 // First by priority (lower number = higher priority)
                 if (a.priority !== b.priority) {
                     return a.priority - b.priority;
@@ -1069,7 +1240,7 @@ export class CalendarView extends ItemView {
      * @param task The task to check
      * @returns Whether the task has conflicts
      */
-    private hasSchedulingConflicts(task: Task): boolean {
+    private hasSchedulingConflicts(task: any): boolean {
         // If task has no time blocks, it can't have conflicts
         if (!task.estimatedDuration || !task.dueDate) {
             return false;
@@ -1213,10 +1384,10 @@ export class CalendarView extends ItemView {
 
 // Modal class for editing tasks
 class TaskEditModal extends Modal {
-    task: Task;
-    onSubmit: (task: Task) => void;
+    task: any;  // Change to any type
+    onSubmit: (task: any) => void;
     
-    constructor(app: App, task: Task, onSubmit: (task: Task) => void) {
+    constructor(app: App, task: any, onSubmit: (task: any) => void) {
         super(app);
         this.task = task;
         this.onSubmit = onSubmit;
@@ -1362,7 +1533,7 @@ class TaskEditModal extends Modal {
         tagsGroup.createEl('label', {text: 'Tags (comma separated):'});
         const tagsInput = tagsGroup.createEl('input', {
             type: 'text',
-            value: this.task.tags.join(', ')
+            value: this.task.tags ? this.task.tags.join(', ') : ''
         });
         
         // Buttons in a footer
@@ -1589,9 +1760,10 @@ class TaskCreateModal extends Modal {
             }
             
             // Create new task
-            const newTask: Task = {
-                id: '', // Will be set by the service
+            const newTask: any = {
+                id: Date.now().toString(), // Generate a temporary ID
                 title: titleInput.value,
+                content: titleInput.value, // Add content field
                 description: descriptionInput.value || undefined,
                 creationDate: new Date(),
                 status: statusSelect.value as OkrStatus,
@@ -1648,10 +1820,10 @@ class TaskCreateModal extends Modal {
 // Modal for time block actions
 class TimeBlockModal extends Modal {
     block: TimeBlockInfo;
-    task: Task;
+    task: any;  // Change to any type
     okrService: OkrService;
     
-    constructor(app: App, block: TimeBlockInfo, task: Task, okrService: OkrService) {
+    constructor(app: App, block: TimeBlockInfo, task: any, okrService: OkrService) {
         super(app);
         this.block = block;
         this.task = task;

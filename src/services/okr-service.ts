@@ -52,6 +52,7 @@ export class OkrService {
     async initialize(): Promise<void> {
         try {
             await this.loadAll();
+            await this.importMarkdownTasks(); // Add this line
             console.log('OKR Service initialized');
         } catch (error) {
             console.error('Error initializing OKR Service:', error);
@@ -123,11 +124,138 @@ export class OkrService {
         this.setupRelationships();
         
         // Load time blocks from tasks with estimatedDuration
-        this.setupTimeBlocks();
+        this.setupTimeBlocks()
         
         // Notify listeners
         this.notifyUpdates();
     }
+
+    /**
+ * Import tasks from markdown files
+ * This scans your vault for markdown task syntax and adds them to the system
+ */
+async importMarkdownTasks(): Promise<void> {
+    try {
+        // Get all markdown files
+        const markdownFiles = this.app.vault.getMarkdownFiles();
+        let importedCount = 0;
+        
+        // Create an "Imported Tasks" project if it doesn't exist
+        let importedProject = this.projects.find(p => p.title === "Imported Tasks");
+        
+        if (!importedProject) {
+            // Find or create a default key result
+            let defaultKeyResult = this.keyResults.find(kr => kr.title === "External Tasks");
+            
+            if (!defaultKeyResult) {
+                // Find or create a default objective
+                let defaultObjective = this.objectives.find(obj => obj.title === "External Content");
+                
+                if (!defaultObjective) {
+                    // Use a type assertion to handle all required properties
+                    defaultObjective = await this.createObjective({
+                        title: "External Content",
+                        description: "Tasks and content imported from external sources",
+                        status: "in-progress",
+                        startDate: new Date(),
+                        endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+                        progress: 0,
+                        priority: 3,
+                        tags: []
+                    } as any); // Type assertion to bypass strict checking
+                }
+                
+                // Use a type assertion for key result
+                defaultKeyResult = await this.createKeyResult({
+                    title: "External Tasks",
+                    description: "Tasks imported from markdown files",
+                    objectiveId: defaultObjective.id,
+                    status: "in-progress",
+                    startDate: defaultObjective.startDate,
+                    endDate: defaultObjective.endDate,
+                    progress: 0,
+                    priority: 3,
+                    tags: []
+                } as any); // Type assertion
+            }
+            
+            // Use a type assertion for project
+            importedProject = await this.createProject({
+                title: "Imported Tasks",
+                description: "Tasks imported from markdown files",
+                keyResultId: defaultKeyResult.id,
+                status: "in-progress",
+                startDate: defaultKeyResult.startDate,
+                endDate: defaultKeyResult.endDate,
+                progress: 0,
+                priority: 3,
+                tags: []
+            } as any); // Type assertion
+        }
+        
+        // Process each file
+        for (const file of markdownFiles) {
+            const content = await this.app.vault.read(file);
+            
+            // Use regex to extract tasks
+            const taskRegex = /- \[([ x])\] (.*?)(?:📅|⏳|🛫|✅|@due\(|@completed\()(.*?)(?:\)|$)/g;
+            let match;
+            
+            while ((match = taskRegex.exec(content)) !== null) {
+                const completed = match[1] === 'x';
+                const taskTitle = match[2].trim();
+                let dateString = match[3].trim();
+                
+                // Parse date
+                let dueDate: Date | null = null;
+                try {
+                    // Handle various date formats
+                    if (dateString.includes('@due(')) {
+                        dateString = dateString.split('@due(')[1].split(')')[0].split(' ')[0];
+                    }
+                    
+                    if (dateString) {
+                        dueDate = new Date(dateString);
+                    }
+                } catch (e) {
+                    console.log('Error parsing date:', dateString, e);
+                }
+                
+                // Skip if we already have this task
+                const existingTask = this.tasks.find(t => 
+                    t.title === taskTitle && 
+                    t.sourcePath === file.path
+                );
+                
+                if (!existingTask && dueDate && !isNaN(dueDate.getTime())) {
+                    // Use a type assertion for task
+                    await this.createTask({
+                        title: taskTitle,
+                        description: '',
+                        projectId: importedProject.id,
+                        status: completed ? 'completed' : 'next-up',
+                        priority: 3,
+                        dueDate: dueDate,
+                        completed: completed,
+                        sourcePath: file.path,
+                        tags: [],
+                        recurring: false // Required
+                        // Omit timeDefense as it seems to cause issues
+                    } as any); // Type assertion
+                    
+                    importedCount++;
+                }
+            }
+        }
+        
+        if (importedCount > 0) {
+            new Notice(`Imported ${importedCount} tasks from markdown files`);
+        }
+    } catch (error) {
+        console.error('Error importing markdown tasks:', error);
+        new Notice('Error importing markdown tasks');
+    }
+}
     
     /**
      * Set up relationships between OKR elements
@@ -499,6 +627,40 @@ export class OkrService {
         
         // Notify listeners
         this.notifyUpdates();
+
+        // Update the project with the new task
+        if (newTask.projectId) {
+            const project = this.projects.find(p => p.id === newTask.projectId);
+            if (project) {
+                if (!project.tasks) {
+                    project.tasks = [];
+                }
+                
+                // Add only if not already in the array
+                if (!project.tasks.some(t => t.id === newTask.id)) {
+                    project.tasks.push(newTask);
+                    
+                    // Recalculate project progress
+                    project.progress = calculateProjectProgress(project);
+                    
+                    // Update parent key result
+                    if (project.keyResultId) {
+                        const keyResult = this.keyResults.find(kr => kr.id === project.keyResultId);
+                        if (keyResult) {
+                            keyResult.progress = calculateKeyResultProgress(keyResult);
+                            
+                            // Update parent objective
+                            if (keyResult.objectiveId) {
+                                const objective = this.objectives.find(obj => obj.id === keyResult.objectiveId);
+                                if (objective) {
+                                    objective.progress = calculateObjectiveProgress(objective);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
         
         return newTask;
     }

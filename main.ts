@@ -304,6 +304,8 @@ export default class AgendaHeroPlugin extends Plugin {
         this.addRibbonIcon('target', 'Open OKR Hierarchy', () => {
             this.activateView('agenda-hero-okr-hierarchy');
         });
+        
+        this.okrService.importMarkdownTasks();
 
         // Success message
         new Notice('AgendaHero has been loaded!');
@@ -312,49 +314,58 @@ export default class AgendaHeroPlugin extends Plugin {
     /**
      * Opens the calendar and task list side by side
      */
-    async openCalendarWithTasklist() {
-        try {
-            // Find current leaf
-            const leaf = this.app.workspace.getLeaf();
-            
-            // Open calendar in this leaf
-            await leaf.setViewState({
-                type: 'agenda-hero-calendar',
-                active: true,
-            });
-            
-            // Create new leaf for task list (to the right of calendar)
-            const taskLeaf = this.app.workspace.splitActiveLeaf('vertical');
-            
-            // Open task list in this leaf
-            await taskLeaf.setViewState({
-                type: 'agenda-hero-tasklist',
-                active: false,
-            });
-            
-            // Adjust width of task list (make it narrower)
-            // Wait a moment for the DOM to update
-            setTimeout(() => {
-                // Find the DOM element of the leaf
-                const taskLeafEl = document.querySelector(`.workspace-leaf[data-type="agenda-hero-tasklist"]`) as HTMLElement;
-                if (taskLeafEl) {
-                    taskLeafEl.style.width = '300px';
-                    taskLeafEl.style.minWidth = '250px';
-                    taskLeafEl.style.maxWidth = '350px';
-                    taskLeafEl.style.flexGrow = '0';
-                    taskLeafEl.style.flexShrink = '0';
-                }
-            }, 100);
-            
-            // Switch back to calendar
-            this.app.workspace.setActiveLeaf(leaf);
-            
-            console.log('Calendar and task list opened successfully side by side');
-        } catch (error) {
-            console.error('Error opening calendar and task list:', error);
-            new Notice(`Error opening calendar and task list: ${error.message}`);
-        }
+    /**
+ * Opens the calendar and task list side by side
+ */
+async openCalendarWithTasklist() {
+    try {
+        // First, load tasks to ensure they're available
+        await this.loadTasks();
+        
+        // Find current leaf
+        const leaf = this.app.workspace.getLeaf();
+        
+        // Open calendar in this leaf
+        await leaf.setViewState({
+            type: 'agenda-hero-calendar',
+            active: true,
+        });
+        
+        // Create new leaf for task list (to the right of calendar)
+        const taskLeaf = this.app.workspace.splitActiveLeaf('vertical');
+        
+        // Open task list in this leaf
+        await taskLeaf.setViewState({
+            type: 'agenda-hero-tasklist',
+            active: false,
+        });
+        
+        // Force tasks to be updated in views
+        this.notifyTasksUpdated();
+        
+        // Adjust width of task list (make it narrower)
+        // Wait a moment for the DOM to update
+        setTimeout(() => {
+            // Find the DOM element of the leaf
+            const taskLeafEl = document.querySelector(`.workspace-leaf[data-type="agenda-hero-tasklist"]`) as HTMLElement;
+            if (taskLeafEl) {
+                taskLeafEl.style.width = '300px';
+                taskLeafEl.style.minWidth = '250px';
+                taskLeafEl.style.maxWidth = '350px';
+                taskLeafEl.style.flexGrow = '0';
+                taskLeafEl.style.flexShrink = '0';
+            }
+        }, 100);
+        
+        // Switch back to calendar
+        this.app.workspace.setActiveLeaf(leaf);
+        
+        console.log('Calendar and task list opened successfully side by side');
+    } catch (error) {
+        console.error('Error opening calendar and task list:', error);
+        new Notice(`Error opening calendar and task list: ${error.message}`);
     }
+}
 
     onunload() {
         // Clean up when plugin is deactivated

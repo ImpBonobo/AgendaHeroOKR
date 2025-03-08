@@ -24,10 +24,10 @@ export class OkrHierarchyView extends ItemView {
 
     async onOpen() {
         // Create container
-        const container = this.containerEl.createDiv({ cls: 'agenda-hero-okr-hierarchy-container' });
+        const container = this.containerEl.createDiv({ cls: 'okr-hierarchy-container' });
         
         // Create header
-        const header = container.createEl('div', { cls: 'agenda-hero-okr-header' });
+        const header = container.createEl('div', { cls: 'okr-hierarchy-header' });
         header.createEl('h2', { text: 'OKR Hierarchy' });
         
         // Create buttons
@@ -134,6 +134,25 @@ export class OkrHierarchyView extends ItemView {
         editButton.addEventListener('click', (e) => {
             e.stopPropagation();
             this.editObjective(objective);
+        });
+
+        // Add delete button for objectives
+        const deleteButton = buttonContainer.createEl('button', { 
+            text: 'Delete',
+            cls: 'agenda-hero-small-button'
+        });
+        deleteButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm('Are you sure you want to delete this objective? This will also delete all associated key results and projects.')) {
+                this.okrService.deleteObjective(objective.id)
+                    .then(() => {
+                        new Notice('Objective deleted successfully');
+                    })
+                    .catch(error => {
+                        console.error('Error deleting objective:', error);
+                        new Notice('Error deleting objective');
+                    });
+            }
         });
         
         const addKrButton = buttonContainer.createEl('button', { 
@@ -246,6 +265,25 @@ export class OkrHierarchyView extends ItemView {
             e.stopPropagation();
             this.editKeyResult(keyResult);
         });
+
+        // Add delete button for key results
+        const deleteButton = buttonContainer.createEl('button', { 
+            text: 'Delete',
+            cls: 'agenda-hero-small-button'
+        });
+        deleteButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm('Are you sure you want to delete this key result? This will also delete all associated projects.')) {
+                this.okrService.deleteKeyResult(keyResult.id)
+                    .then(() => {
+                        new Notice('Key Result deleted successfully');
+                    })
+                    .catch(error => {
+                        console.error('Error deleting key result:', error);
+                        new Notice('Error deleting key result');
+                    });
+            }
+        });
         
         const addProjectButton = buttonContainer.createEl('button', { 
             text: 'Add Project',
@@ -357,6 +395,25 @@ export class OkrHierarchyView extends ItemView {
             e.stopPropagation();
             this.editProject(project);
         });
+
+        // Add delete button for projects
+        const deleteButton = buttonContainer.createEl('button', { 
+            text: 'Delete',
+            cls: 'agenda-hero-small-button'
+        });
+        deleteButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm('Are you sure you want to delete this project? This will also delete all associated tasks.')) {
+                this.okrService.deleteProject(project.id)
+                    .then(() => {
+                        new Notice('Project deleted successfully');
+                    })
+                    .catch(error => {
+                        console.error('Error deleting project:', error);
+                        new Notice('Error deleting project');
+                    });
+            }
+        });
         
         const addTaskButton = buttonContainer.createEl('button', { 
             text: 'Add Task',
@@ -458,6 +515,24 @@ export class OkrHierarchyView extends ItemView {
         editButton.addEventListener('click', (e) => {
             e.stopPropagation();
             this.editTask(task);
+        });
+        // Add delete button for tasks
+        const deleteButton = buttonContainer.createEl('button', {
+            text: 'Delete',
+            cls: 'agenda-hero-small-button'
+        });
+        deleteButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm('Are you sure you want to delete this task?')) {
+                this.okrService.deleteTask(task.id)
+                    .then(() => {
+                        new Notice('Task deleted successfully');
+                    })
+                    .catch(error => {
+                        console.error('Error deleting task:', error);
+                        new Notice('Error deleting task');
+                    });
+            }
         });
     }
     

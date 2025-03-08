@@ -910,3 +910,46 @@
     max-width: 300px;
     font-size: 0.9em;
 }
+
+/* OKR Hierarchy View Styles */
+.okr-hierarchy-container {
+    height: 100%;
+    padding: 10px;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.okr-hierarchy-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: var(--background-secondary);
+    border-bottom: 1px solid var(--background-modifier-border);
+    margin-bottom: 10px;
+}
+
+/* Fix dropdown text visibility issues */
+.agenda-hero-view-button, 
+select, 
+option {
+    color: var(--text-normal) !important;
+}
+
+/* Fix toggle switches */
+input[type="checkbox"] {
+    opacity: 1 !important;
+    position: relative !important;
+    appearance: checkbox !important;
+    -webkit-appearance: checkbox !important;
+    width: auto !important;
+    height: auto !important;
+    margin-right: 8px;
+}
+
+/* Fix toggle background rectangles */
+.checkbox-container {
+    background: none !important;
+    border: none !important;
+}
