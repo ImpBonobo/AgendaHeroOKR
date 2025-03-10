@@ -1,4 +1,4 @@
-// Re-export all modal classes from individual files
+// Re-export all modal classes
 export { OkrModal } from './base-modal';
 export { ObjectiveModal } from './objective-modal';
 export { KeyResultModal } from './key-result-modal';

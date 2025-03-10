@@ -52,11 +52,106 @@ export class OkrService {
     async initialize(): Promise<void> {
         try {
             await this.loadAll();
-            await this.importMarkdownTasks(); // Add this line
+            await this.importMarkdownTasks();
+            
+            // Setup file watcher to update views when files change
+            this.setupFileWatcher();
+            
             console.log('OKR Service initialized');
         } catch (error) {
             console.error('Error initializing OKR Service:', error);
             new Notice('Error initializing OKR Service');
+        }
+    }
+    
+    /**
+     * Setup a watcher for file changes
+     */
+    private setupFileWatcher(): void {
+        // Watch for file modifications
+        this.app.vault.on('modify', (file) => {
+            if (file instanceof TFile && file.extension === 'md') {
+                this.handleFileChange(file);
+            }
+        });
+        
+        // Watch for file deletions
+        this.app.vault.on('delete', (file) => {
+            if (file instanceof TFile && file.extension === 'md') {
+                this.handleFileDelete(file);
+            }
+        });
+    }
+    
+    /**
+     * Handle file change event
+     * @param file The modified file
+     */
+    private async handleFileChange(file: TFile): Promise<void> {
+        // Check if this file is relevant to our OKR system
+        const okrFolders = [
+            this.persistenceService.getConfig().objectivesFolder,
+            this.persistenceService.getConfig().keyResultsFolder,
+            this.persistenceService.getConfig().projectsFolder,
+            this.persistenceService.getConfig().sprintsFolder
+        ];
+        
+        const isOkrFile = okrFolders.some(folder => file.path.startsWith(folder));
+        const hasTaskInSystem = this.tasks.some(task => task.sourcePath === file.path);
+        
+        if (isOkrFile || hasTaskInSystem) {
+            // Refresh all data since files have changed
+            await this.loadAll();
+            this.notifyUpdates();
+        }
+    }
+    
+    /**
+     * Handle file deletion event
+     * @param file The deleted file
+     */
+    private async handleFileDelete(file: TFile): Promise<void> {
+        // Check if any tasks were from this file
+        const hadTasksFromFile = this.tasks.some(task => task.sourcePath === file.path);
+        
+        if (hadTasksFromFile) {
+            // Remove tasks that belonged to this file
+            this.tasks = this.tasks.filter(task => task.sourcePath !== file.path);
+            
+            // Remove references from projects
+            for (const project of this.projects) {
+                if (project.tasks) {
+                    project.tasks = project.tasks.filter(task => task.sourcePath !== file.path);
+                }
+            }
+            
+            // Recalculate progress
+            this.recalculateProgress();
+            
+            // Notify listeners
+            this.notifyUpdates();
+        }
+        
+        // Check if this was an OKR file
+        if (file.path.includes(this.persistenceService.getConfig().objectivesFolder)) {
+            // Remove objectives from this file
+            this.objectives = this.objectives.filter(obj => obj.sourceFile?.path !== file.path);
+            await this.loadAll(); // Reload all data to maintain consistency
+        } else if (file.path.includes(this.persistenceService.getConfig().keyResultsFolder)) {
+            // Remove key results from this file
+            this.keyResults = this.keyResults.filter(kr => kr.sourceFile?.path !== file.path);
+            await this.loadAll(); // Reload all data to maintain consistency
+        } else if (file.path.includes(this.persistenceService.getConfig().projectsFolder)) {
+            // Remove projects from this file
+            this.projects = this.projects.filter(p => p.sourceFile?.path !== file.path);
+            await this.loadAll(); // Reload all data to maintain consistency
+        } else if (file.path.includes(this.persistenceService.getConfig().sprintsFolder)) {
+            // For sprints, we need to check the path differently since they don't have sourceFile
+            // We can use the filename pattern from the configuration
+            const sprintConfig = this.persistenceService.getConfig();
+            const filename = file.basename;
+            this.sprints = this.sprints.filter(s => !filename.includes(s.id));
+            await this.loadAll(); // Reload all data to maintain consistency
         }
     }
     
@@ -69,16 +164,35 @@ export class OkrService {
     }
     
     /**
-     * Notify all registered callbacks of data updates
-     */
+ * Notify all registered callbacks of data updates
+ */
     private notifyUpdates(): void {
-        this.updateCallbacks.forEach(callback => callback());
+        // Ensure timeblocks are updated before notifying views
+        this.setupTimeBlocks();
+        
+        // Use setTimeout to ensure the notification happens after the current execution context
+        // This prevents issues with callbacks being called during in-progress updates
+        setTimeout(() => {
+            this.updateCallbacks.forEach(callback => {
+                try {
+                    callback();
+                } catch (error) {
+                    console.error('Error in update callback:', error);
+                }
+            });
+        }, 0);
     }
     
     /**
      * Load all OKR data
      */
     async loadAll(): Promise<void> {
+        console.log("Starting loadAll. Current tasks:", this.tasks.length);
+        
+        // Sichern der aktuellen Tasks
+        const existingTasks = [...this.tasks];
+        const existingTasksMap = new Map(existingTasks.map(task => [task.id, task]));
+        
         // Load objectives
         this.objectives = await this.persistenceService.loadObjectives();
         
@@ -91,8 +205,8 @@ export class OkrService {
         // Load sprints
         this.sprints = await this.persistenceService.loadSprints();
         
-        // Load tasks from relevant sources
-        this.tasks = [];
+        // Prepare a new task array
+        const newTasks: Task[] = [];
         
         // Load tasks from projects
         for (const project of this.projects) {
@@ -102,9 +216,17 @@ export class OkrService {
                 // Set project ID for each task
                 projectTasks.forEach(task => {
                     task.projectId = project.id;
+                    
+                    // Check if this task already exists
+                    const existingTask = existingTasksMap.get(task.id);
+                    if (existingTask) {
+                        // Merge properties while keeping existing task state
+                        Object.assign(existingTask, task);
+                        newTasks.push(existingTask);
+                    } else {
+                        newTasks.push(task);
+                    }
                 });
-                
-                this.tasks.push(...projectTasks);
             }
         }
         
@@ -113,18 +235,36 @@ export class OkrService {
             const sprintTasks = sprint.tasks;
             
             // Check which tasks are not already loaded
-            const newTasks = sprintTasks.filter(sprintTask => 
-                !this.tasks.some(task => task.id === sprintTask.id)
-            );
-            
-            this.tasks.push(...newTasks);
+            for (const sprintTask of sprintTasks) {
+                if (!newTasks.some(task => task.id === sprintTask.id)) {
+                    // Check if this task already exists in existing tasks
+                    const existingTask = existingTasksMap.get(sprintTask.id);
+                    if (existingTask) {
+                        newTasks.push(existingTask);
+                    } else {
+                        newTasks.push(sprintTask);
+                    }
+                }
+            }
         }
+        
+        // Add any existing tasks that might not be in projects or sprints
+        for (const existingTask of existingTasks) {
+            if (!newTasks.some(task => task.id === existingTask.id)) {
+                newTasks.push(existingTask);
+            }
+        }
+        
+        // Update tasks
+        this.tasks = newTasks;
+        
+        console.log("After loadAll. Current tasks:", this.tasks.length);
         
         // Establish relationships
         this.setupRelationships();
         
         // Load time blocks from tasks with estimatedDuration
-        this.setupTimeBlocks()
+        this.setupTimeBlocks();
         
         // Notify listeners
         this.notifyUpdates();
@@ -134,126 +274,159 @@ export class OkrService {
  * Import tasks from markdown files
  * This scans your vault for markdown task syntax and adds them to the system
  */
+/**
+ * Discovers projects and tasks in markdown files
+ * This scans your vault for markdown files with specific tags and recognizes them as projects
+ */
 async importMarkdownTasks(): Promise<void> {
     try {
         // Get all markdown files
         const markdownFiles = this.app.vault.getMarkdownFiles();
-        let importedCount = 0;
+        let discoveredProjects = 0;
+        let discoveredTasks = 0;
         
-        // Create an "Imported Tasks" project if it doesn't exist
-        let importedProject = this.projects.find(p => p.title === "Imported Tasks");
+        // Skip files that are already part of the OKR system
+        const okrFolders = [
+            this.persistenceService.getConfig().objectivesFolder,
+            this.persistenceService.getConfig().keyResultsFolder,
+            this.persistenceService.getConfig().projectsFolder,
+            this.persistenceService.getConfig().sprintsFolder
+        ];
         
-        if (!importedProject) {
-            // Find or create a default key result
-            let defaultKeyResult = this.keyResults.find(kr => kr.title === "External Tasks");
+        // Get the project tag from settings (you need to add this to your settings)
+        // For now, we'll use a default tag
+        const projectTag = '#project';
+        
+        // First pass: discover projects
+        for (const file of markdownFiles) {
+            // Skip OKR system files
+            if (okrFolders.some(folder => file.path.startsWith(folder))) {
+                continue;
+            }
             
-            if (!defaultKeyResult) {
-                // Find or create a default objective
-                let defaultObjective = this.objectives.find(obj => obj.title === "External Content");
+            const content = await this.app.vault.read(file);
+            
+            // Check if file has project tag
+            if (content.includes(projectTag)) {
+                // Extract title
+                const titleMatch = /^#\s+(.*)/m.exec(content);
+                if (!titleMatch) continue;
                 
-                if (!defaultObjective) {
-                    // Use a type assertion to handle all required properties
-                    defaultObjective = await this.createObjective({
-                        title: "External Content",
-                        description: "Tasks and content imported from external sources",
+                const projectTitle = titleMatch[1].trim();
+                
+                // Check if project already exists
+                const existingProject = this.projects.find(p => 
+                    p.title === projectTitle && 
+                    p.sourcePath === file.path
+                );
+                
+                if (!existingProject) {
+                    // Find or create a default key result
+                    let defaultKeyResult = this.keyResults.find(kr => kr.title === "External Tasks");
+                    
+                    if (!defaultKeyResult) {
+                        // Find or create a default objective
+                        let defaultObjective = this.objectives.find(obj => obj.title === "External Content");
+                        
+                        if (!defaultObjective) {
+                            defaultObjective = await this.createObjective({
+                                title: "External Content",
+                                description: "Tasks and content imported from external sources",
+                                status: "in-progress",
+                                startDate: new Date(),
+                                endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+                                progress: 0,
+                                priority: 3,
+                                tags: []
+                            } as any);
+                        }
+                        
+                        defaultKeyResult = await this.createKeyResult({
+                            title: "External Tasks",
+                            description: "Tasks imported from markdown files",
+                            objectiveId: defaultObjective.id,
+                            status: "in-progress",
+                            startDate: defaultObjective.startDate,
+                            endDate: defaultObjective.endDate,
+                            progress: 0,
+                            priority: 3,
+                            tags: []
+                        } as any);
+                    }
+                    
+                    // Create project
+                    const project = await this.createProject({
+                        title: projectTitle,
+                        description: "Externally discovered project",
+                        keyResultId: defaultKeyResult.id,
                         status: "in-progress",
-                        startDate: new Date(),
-                        endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+                        startDate: defaultKeyResult.startDate,
+                        endDate: defaultKeyResult.endDate,
                         progress: 0,
                         priority: 3,
                         tags: []
-                    } as any); // Type assertion to bypass strict checking
-                }
-                
-                // Use a type assertion for key result
-                defaultKeyResult = await this.createKeyResult({
-                    title: "External Tasks",
-                    description: "Tasks imported from markdown files",
-                    objectiveId: defaultObjective.id,
-                    status: "in-progress",
-                    startDate: defaultObjective.startDate,
-                    endDate: defaultObjective.endDate,
-                    progress: 0,
-                    priority: 3,
-                    tags: []
-                } as any); // Type assertion
-            }
-            
-            // Use a type assertion for project
-            importedProject = await this.createProject({
-                title: "Imported Tasks",
-                description: "Tasks imported from markdown files",
-                keyResultId: defaultKeyResult.id,
-                status: "in-progress",
-                startDate: defaultKeyResult.startDate,
-                endDate: defaultKeyResult.endDate,
-                progress: 0,
-                priority: 3,
-                tags: []
-            } as any); // Type assertion
-        }
-        
-        // Process each file
-        for (const file of markdownFiles) {
-            const content = await this.app.vault.read(file);
-            
-            // Use regex to extract tasks
-            const taskRegex = /- \[([ x])\] (.*?)(?:📅|⏳|🛫|✅|@due\(|@completed\()(.*?)(?:\)|$)/g;
-            let match;
-            
-            while ((match = taskRegex.exec(content)) !== null) {
-                const completed = match[1] === 'x';
-                const taskTitle = match[2].trim();
-                let dateString = match[3].trim();
-                
-                // Parse date
-                let dueDate: Date | null = null;
-                try {
-                    // Handle various date formats
-                    if (dateString.includes('@due(')) {
-                        dateString = dateString.split('@due(')[1].split(')')[0].split(' ')[0];
-                    }
+                    } as any);
                     
-                    if (dateString) {
-                        dueDate = new Date(dateString);
-                    }
-                } catch (e) {
-                    console.log('Error parsing date:', dateString, e);
-                }
-                
-                // Skip if we already have this task
-                const existingTask = this.tasks.find(t => 
-                    t.title === taskTitle && 
-                    t.sourcePath === file.path
-                );
-                
-                if (!existingTask && dueDate && !isNaN(dueDate.getTime())) {
-                    // Use a type assertion for task
-                    await this.createTask({
-                        title: taskTitle,
-                        description: '',
-                        projectId: importedProject.id,
-                        status: completed ? 'completed' : 'next-up',
-                        priority: 3,
-                        dueDate: dueDate,
-                        completed: completed,
-                        sourcePath: file.path,
-                        tags: [],
-                        recurring: false // Required
-                        // Omit timeDefense as it seems to cause issues
-                    } as any); // Type assertion
+                    // Set source path
+                    project.sourcePath = file.path;
                     
-                    importedCount++;
+                    discoveredProjects++;
+                    
+                    // Second pass: load tasks from this project
+                    const tasks = await this.persistenceService.loadTasksFromFile(file.path);
+
+                    for (const task of tasks) {
+                        // Skip tasks that already exist
+                        const existingTask = this.tasks.find(t => 
+                            t.title === task.title && 
+                            t.sourcePath === file.path
+                        );
+                        
+                        if (!existingTask) {
+                            task.projectId = project.id;
+                            
+                            // Wichtig: Setzen Sie die autoSchedule-Eigenschaft, damit der Task im Kalender erscheint
+                            if (task.dueDate) {
+                                task.autoSchedule = true;
+                                
+                                // Setze estimatedDuration wenn nicht vorhanden, damit Task in Kalender erscheint
+                                if (!task.estimatedDuration) {
+                                    task.estimatedDuration = 60; // Standardmäßig 60 Minuten
+                                }
+                            }
+                            
+                            this.tasks.push(task);
+                            
+                            // Link to project
+                            if (!project.tasks) {
+                                project.tasks = [];
+                            }
+                            project.tasks.push(task);
+                            
+                            // Schedule task if it has a due date for calendar view
+                            if (task.dueDate && task.estimatedDuration && task.autoSchedule) {
+                                this.scheduleTask(task);
+                            }
+                            
+                            discoveredTasks++;
+                        }
+                    }
                 }
             }
         }
         
-        if (importedCount > 0) {
-            new Notice(`Imported ${importedCount} tasks from markdown files`);
+        if (discoveredProjects > 0 || discoveredTasks > 0) {
+            new Notice(`Discovered ${discoveredProjects} projects and ${discoveredTasks} tasks from markdown files`);
         }
+        
+        // Recalculate progress
+        this.recalculateProgress();
+        
+        // Notify listeners
+        this.notifyUpdates();
     } catch (error) {
-        console.error('Error importing markdown tasks:', error);
-        new Notice('Error importing markdown tasks');
+        console.error('Error discovering projects and tasks:', error);
+        new Notice('Error discovering projects and tasks');
     }
 }
     
@@ -565,6 +738,11 @@ async importMarkdownTasks(): Promise<void> {
      * @returns The created task
      */
     async createTask(task: Omit<Task, 'id' | 'creationDate'>, filePath?: string): Promise<Task> {
+        console.log("Creating new task:", task.title, "Current tasks:", this.tasks.length);
+        
+        // Sichern der aktuellen Tasks
+        const originalTasks = [...this.tasks];
+        
         // Generate ID if not provided
         const newTask: Task = {
             ...task,
@@ -574,21 +752,36 @@ async importMarkdownTasks(): Promise<void> {
         
         // Determine file path if not provided
         let targetFilePath = filePath;
-        
+
         if (!targetFilePath && newTask.projectId) {
             const project = this.projects.find(p => p.id === newTask.projectId);
             if (project) {
                 targetFilePath = project.sourcePath;
             }
         }
-        
+
+        // If still no file path and due date is set, use daily note for that date
+        if (!targetFilePath && newTask.dueDate) {
+            // Format date as YYYY-MM-DD for daily note
+            const formattedDate = this.formatDateForDailyNote(newTask.dueDate);
+            targetFilePath = `Daily/${formattedDate}.md`;
+            
+            // Create daily note folder if it doesn't exist
+            await this.ensureFolderExists('Daily');
+        }
+
         // If still no file path, use a default tasks file
         if (!targetFilePath) {
             targetFilePath = 'Tasks.md';
-            
-            // Create file if it doesn't exist
-            const file = this.app.vault.getAbstractFileByPath(targetFilePath);
-            if (!file) {
+        }
+
+        // Create file if it doesn't exist
+        const file = this.app.vault.getAbstractFileByPath(targetFilePath);
+        if (!file) {
+            // If it's a daily note, use a template
+            if (targetFilePath.startsWith('Daily/')) {
+                await this.app.vault.create(targetFilePath, `# Daily Note ${this.formatDateForDisplay(newTask.dueDate || new Date())}\n\n## Tasks\n\n`);
+            } else {
                 await this.app.vault.create(targetFilePath, '# Tasks\n\n');
             }
         }
@@ -661,6 +854,12 @@ async importMarkdownTasks(): Promise<void> {
                 }
             }
         }
+        if (this.tasks.length < originalTasks.length + 1) {
+            console.error("Task list size decreased! Restoring original tasks plus new task.");
+            this.tasks = [...originalTasks, newTask];
+        }
+        console.log("After creating task:", task.title, "Current tasks:", this.tasks.length);
+
         
         return newTask;
     }
@@ -1258,15 +1457,34 @@ async importMarkdownTasks(): Promise<void> {
     
     // Helper methods
     
+    // Statische Zähler für jede ID-Art
+    private static objectiveCounter = 1;
+    private static keyResultCounter = 1;
+    private static projectCounter = 1;
+    private static taskCounter = 1;
+
     /**
      * Generate a unique ID for an OKR element
      * @param prefix Prefix for the ID
      * @returns Generated ID
      */
     private generateId(prefix: string): string {
-        const timestamp = Date.now();
-        const random = Math.floor(Math.random() * 10000);
-        return `${prefix}-${timestamp}-${random}`;
+        let counter = 1;
+        
+        // Verwende den entsprechenden Zähler für den Präfix
+        if (prefix === 'obj') {
+            counter = OkrService.objectiveCounter++;
+        } else if (prefix === 'kr') {
+            counter = OkrService.keyResultCounter++;
+        } else if (prefix === 'prj') {
+            counter = OkrService.projectCounter++;
+        } else if (prefix === 'task') {
+            counter = OkrService.taskCounter++;
+        }
+        
+        // Jahr zur ID hinzufügen für zusätzlichen Kontext
+        const year = new Date().getFullYear();
+        return `${prefix}-${year}-${counter}`;
     }
     
     /**
@@ -1281,5 +1499,41 @@ async importMarkdownTasks(): Promise<void> {
         const year = sprint.year || new Date().getFullYear();
         
         return `SB-${sprintNumber}-${month}M-${quarter}Q-${year}Y`;
+    }
+
+    /**
+     * Format date for daily note filename
+     * @param date The date to format
+     * @returns Formatted date string (YYYY-MM-DD)
+     */
+    private formatDateForDailyNote(date: Date): string {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    /**
+     * Format date for display
+     * @param date The date to format
+     * @returns Formatted date string for display
+     */
+    private formatDateForDisplay(date: Date): string {
+        return date.toLocaleDateString('de-DE', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
+
+    /**
+     * Ensure a folder exists
+     * @param folderPath Path to the folder
+     */
+    private async ensureFolderExists(folderPath: string): Promise<void> {
+        if (!this.app.vault.getAbstractFileByPath(folderPath)) {
+            await this.app.vault.createFolder(folderPath);
+        }
     }
 }

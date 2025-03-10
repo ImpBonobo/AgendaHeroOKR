@@ -9,6 +9,8 @@ import { Task } from '../../main';
 import { OkrStatus } from '../models/okr-models';
 import { OkrService } from '../services/okr-service';
 import { TimeBlockInfo } from '../utils/time-manager';
+import { TaskModal } from '../components/task-modal';
+import { TimeBlockModal } from '../components/time-block-modal';
 
 
 
@@ -31,43 +33,43 @@ export class CalendarView extends ItemView {
     }
 
     // Adapter for converting between Task types
-private adaptMainTaskToOkrTask(task: any): any {
-    return {
-        id: task.id,
-        title: task.title || task.content,
-        description: task.description,
-        status: task.status || 'next-up',
-        priority: task.priority,
-        dueDate: task.dueDate,
-        projectId: task.projectId || '',
-        completed: task.completed,
-        estimatedDuration: task.estimatedDuration,
-        autoSchedule: task.autoSchedule,
-        urgency: task.urgency,
-        conflictBehavior: task.conflictBehavior,
-        creationDate: task.creationDate
-    };
-}
+    private adaptMainTaskToOkrTask(task: any): any {
+        return {
+            id: task.id,
+            title: task.title || task.content,
+            description: task.description,
+            status: task.status || 'next-up',
+            priority: task.priority,
+            dueDate: task.dueDate,
+            projectId: task.projectId || '',
+            completed: task.completed,
+            estimatedDuration: task.estimatedDuration,
+            autoSchedule: task.autoSchedule,
+            urgency: task.urgency,
+            conflictBehavior: task.conflictBehavior,
+            creationDate: task.creationDate
+        };
+    }
 
-// Adapter for converting OKR tasks to main tasks
-private adaptOkrTaskToMainTask(task: any): any {
-    return {
-        id: task.id,
-        title: task.title,
-        content: task.title || '',
-        description: task.description,
-        status: task.status,
-        priority: task.priority,
-        dueDate: task.dueDate,
-        projectId: task.projectId,
-        completed: task.completed,
-        estimatedDuration: task.estimatedDuration,
-        creationDate: task.creationDate || new Date(),
-        sourcePath: '',
-        recurring: false,
-        tags: []
-    };
-}
+    // Adapter for converting OKR tasks to main tasks
+    private adaptOkrTaskToMainTask(task: any): any {
+        return {
+            id: task.id,
+            title: task.title,
+            content: task.title || '',
+            description: task.description,
+            status: task.status,
+            priority: task.priority,
+            dueDate: task.dueDate,
+            projectId: task.projectId,
+            completed: task.completed,
+            estimatedDuration: task.estimatedDuration,
+            creationDate: task.creationDate || new Date(),
+            sourcePath: '',
+            recurring: false,
+            tags: []
+        };
+    }
 
     getViewType(): string {
         return 'agenda-hero-calendar';
@@ -284,8 +286,38 @@ private adaptOkrTaskToMainTask(task: any): any {
                 },
                 
                 // Create new task on click in empty area
-                dateClick: (info) => {
-                    this.createNewTask(info.date);
+                dateClick: async (info) => {
+                    // Öffnen eines Modals zur Task-Erstellung mit Projektauswahl
+                    const modal = new TaskModal(
+                        this.app,
+                        this.okrService,
+                        null, // Kein vorausgewähltes Projekt
+                        async (taskData, filePath) => {
+                            // Task mit dem angegebenen Dateipfad erstellen
+                            // Hier müssen wir sicherstellen, dass alle erforderlichen Felder gesetzt sind
+                            const completeTaskData = {
+                                title: taskData.title || '',
+                                description: taskData.description,
+                                projectId: taskData.projectId || '',
+                                status: taskData.status || 'next-up',
+                                priority: taskData.priority || 3,
+                                dueDate: taskData.dueDate,
+                                completed: taskData.completed || false,
+                                recurring: taskData.recurring || false,
+                                estimatedDuration: taskData.estimatedDuration,
+                                tags: taskData.tags || [],
+                                autoSchedule: taskData.autoSchedule !== undefined ? taskData.autoSchedule : true
+                            };
+                            
+                            const task = await this.okrService.createTask(completeTaskData as any, filePath);
+                            
+                            // Kalenderansicht aktualisieren
+                            this.calendar.refetchEvents();
+                        },
+                        undefined, // Kein existierender Task
+                        info.date // Das ausgewählte Datum
+                    );
+                    modal.open();
                 },
                 
                 // Event handler for moving events
@@ -570,7 +602,6 @@ private adaptOkrTaskToMainTask(task: any): any {
         }
     }
     
-    // Method to edit a task
     editTask(taskId: string) {
         try {
             // First try to get the task from OKR service
@@ -588,27 +619,33 @@ private adaptOkrTaskToMainTask(task: any): any {
             }
             
             if (task) {
-                const modal = new TaskEditModal(this.app, task, (updatedTask) => {
-                    try {
-                        // First try to update in OKR service
-                        this.okrService.updateTask(updatedTask);
-                    } catch (err) {
-                        console.warn('OKR service could not update task:', err);
-                        
-                        // Fall back to plugin's task update
-                        const pluginTask = this.plugin.tasks.find(t => t.id === taskId);
-                        if (pluginTask) {
-                            Object.assign(pluginTask, updatedTask);
-                            this.plugin.updateTaskInFile(updatedTask);
+                const modal = new TaskModal(
+                    this.app,
+                    this.okrService,
+                    task.projectId || '',
+                    (updatedTask) => {
+                        try {
+                            // First try to update in OKR service
+                            this.okrService.updateTask(updatedTask as any);
+                        } catch (err) {
+                            console.warn('OKR service could not update task:', err);
+                            
+                            // Fall back to plugin's task update
+                            const pluginTask = this.plugin.tasks.find(t => t.id === taskId);
+                            if (pluginTask) {
+                                Object.assign(pluginTask, updatedTask);
+                                this.plugin.updateTaskInFile(updatedTask as any);
+                            }
                         }
-                    }
-                    
-                    // Notification
-                    new Notice('Task updated');
-                    
-                    // Update calendar
-                    this.updateEvents();
-                });
+                        
+                        // Notification
+                        new Notice('Task updated');
+                        
+                        // Update calendar
+                        this.updateEvents();
+                    },
+                    task as any // Pass existing task
+                );
                 
                 modal.open();
             } else {
@@ -619,6 +656,7 @@ private adaptOkrTaskToMainTask(task: any): any {
             new Notice(`Error editing task: ${error.message}`);
         }
     }
+
     // Method to edit a time block
     editTimeBlock(blockId: string) {
         try {
@@ -653,40 +691,47 @@ private adaptOkrTaskToMainTask(task: any): any {
     // Method to create a new task
     createNewTask(date: Date) {
         try {
-            // Create new task modal
-            const modal = new TaskCreateModal(this.app, date, async (newTask: any) => {
-                try {
-                    // Process date and time
-                    if (newTask.dueDate) {
-                        // Add task to OKR model (try)
-                        try {
-                            // Convert to compatible format if needed
-                            const taskForService: any = { ...newTask };
-                            // Ensure required fields
-                            if (taskForService.projectId === undefined) {
-                                taskForService.projectId = '';
+            // Create new task modal using our new TaskModal
+            const modal = new TaskModal(
+                this.app,
+                this.okrService,
+                null, // No project ID yet
+                async (newTask: any, filePath?: string) => {
+                    try {
+                        // Process date and time
+                        if (newTask.dueDate) {
+                            // Add task to OKR model (try)
+                            try {
+                                // Convert to compatible format if needed
+                                const taskForService: any = { ...newTask };
+                                // Ensure required fields
+                                if (taskForService.projectId === undefined) {
+                                    taskForService.projectId = '';
+                                }
+                                
+                                await this.okrService.createTask(taskForService, filePath);
+                            } catch (err) {
+                                console.warn('OKR service could not create task:', err);
+                                // Fall back to plugin's task creation
+                                this.plugin.tasks.push(newTask);
+                                this.plugin.notifyTasksUpdated();
                             }
-                            
-                            await this.okrService.createTask(taskForService);
-                        } catch (err) {
-                            console.warn('OKR service could not create task:', err);
-                            // Fall back to plugin's task creation
-                            this.plugin.tasks.push(newTask);
-                            this.plugin.notifyTasksUpdated();
                         }
+                        
+                        // Notification
+                        new Notice(`New task created for ${date.toLocaleDateString()}`);
+                        
+                        // Update calendar
+                        this.updateEvents();
+                        
+                    } catch (err) {
+                        console.error('Error creating task:', err);
+                        new Notice(`Error creating task: ${err.message}`);
                     }
-                    
-                    // Notification
-                    new Notice(`New task created for ${date.toLocaleDateString()}`);
-                    
-                    // Update calendar
-                    this.updateEvents();
-                    
-                } catch (err) {
-                    console.error('Error creating task:', err);
-                    new Notice(`Error creating task: ${err.message}`);
-                }
-            }, this.okrService);
+                },
+                undefined, // No existing task
+                date // Selected date
+            );
             
             modal.open();
         } catch (error) {
@@ -1066,8 +1111,8 @@ private adaptOkrTaskToMainTask(task: any): any {
     }
 
     /**
- * Reschedule all auto-schedulable tasks
- */
+     * Reschedule all auto-schedulable tasks
+     */
     private rescheduleAllTasks() {
         try {
             // Get all auto-schedulable tasks with due dates and estimated durations
@@ -1379,542 +1424,5 @@ private adaptOkrTaskToMainTask(task: any): any {
             this.calendar.destroy();
         }
         this.containerEl.empty();
-    }
-}
-
-// Modal class for editing tasks
-class TaskEditModal extends Modal {
-    task: any;  // Change to any type
-    onSubmit: (task: any) => void;
-    
-    constructor(app: App, task: any, onSubmit: (task: any) => void) {
-        super(app);
-        this.task = task;
-        this.onSubmit = onSubmit;
-    }
-    
-    onOpen() {
-        const {contentEl} = this;
-    
-        // Heading
-        contentEl.createEl('h2', {text: 'Edit Task'});
-        
-        // Container for content with scrollbar
-        const modalContent = contentEl.createDiv({ cls: 'modal-content' });
-        
-        // Title field
-        const titleGroup = modalContent.createDiv({ cls: 'form-group' });
-        titleGroup.createEl('label', {text: 'Title:'});
-        const titleInput = titleGroup.createEl('input', {
-            type: 'text',
-            value: this.task.title
-        });
-        
-        // Description field (if any)
-        const descriptionGroup = modalContent.createDiv({ cls: 'form-group' });
-        descriptionGroup.createEl('label', {text: 'Description (optional):'});
-        const descriptionInput = descriptionGroup.createEl('textarea', {
-            value: this.task.description || ''
-        });
-        descriptionInput.style.width = '100%';
-        descriptionInput.style.minHeight = '80px';
-        
-        // Date and time
-        const dateTimeGroup = modalContent.createDiv({ cls: 'form-group' });
-        dateTimeGroup.createEl('label', {text: 'Due date:'});
-        
-        const dateTimeContainer = dateTimeGroup.createDiv({ cls: 'date-time-container' });
-        
-        // Date
-        const dateInput = dateTimeContainer.createEl('input', {
-            type: 'date',
-            value: this.task.dueDate ? this.task.dueDate.toISOString().split('T')[0] : ''
-        });
-        
-        // Time
-        const timeInput = dateTimeContainer.createEl('input', {
-            type: 'time',
-            value: this.task.dueDate && (this.task.dueDate.getHours() !== 0 || this.task.dueDate.getMinutes() !== 0) ? 
-                `${String(this.task.dueDate.getHours()).padStart(2, '0')}:${String(this.task.dueDate.getMinutes()).padStart(2, '0')}` : 
-                ''
-        });
-        
-        // Estimated duration
-        const durationGroup = modalContent.createDiv({ cls: 'form-group' });
-        durationGroup.createEl('label', {text: 'Estimated duration (minutes):'});
-        const durationInput = durationGroup.createEl('input', {
-            type: 'number',
-            value: this.task.estimatedDuration?.toString() || '',
-            attr: { min: '1', step: '1' }
-        });
-        
-        // Status
-        const statusGroup = modalContent.createDiv({ cls: 'form-group' });
-        statusGroup.createEl('label', {text: 'Status:'});
-        const statusSelect = statusGroup.createEl('select');
-        
-        // Status options
-        const statuses: Array<{value: OkrStatus, text: string}> = [
-            { value: 'next-up', text: 'Next Up' },
-            { value: 'in-progress', text: 'In Progress' },
-            { value: 'waiting-on', text: 'Waiting On' },
-            { value: 'validating', text: 'Validating' },
-            { value: 'completed', text: 'Completed' },
-            { value: 'canceled', text: 'Canceled' }
-        ];
-        
-        statuses.forEach(status => {
-            const option = statusSelect.createEl('option', {
-                text: status.text,
-                value: status.value
-            });
-            
-            if (status.value === this.task.status) {
-                option.selected = true;
-            }
-        });
-        
-        // Completed checkbox
-        const completedGroup = modalContent.createDiv({ cls: 'form-group' });
-        const completedContainer = completedGroup.createDiv({ cls: 'checkbox-container' });
-        const completedCheckbox = completedContainer.createEl('input', {
-            type: 'checkbox',
-            attr: { id: 'task-completed' }
-        });
-        completedCheckbox.checked = this.task.completed;
-        
-        completedContainer.createEl('label', {
-            text: 'Mark as completed',
-            attr: { for: 'task-completed' }
-        });
-        
-        // Link completed status and status dropdown
-        completedCheckbox.addEventListener('change', () => {
-            if (completedCheckbox.checked) {
-                // Set status to completed
-                statusSelect.value = 'completed';
-            } else if (statusSelect.value === 'completed') {
-                // If unchecking and status is completed, set to in-progress
-                statusSelect.value = 'in-progress';
-            }
-        });
-        
-        statusSelect.addEventListener('change', () => {
-            // Update completed checkbox when status changes
-            completedCheckbox.checked = statusSelect.value === 'completed';
-        });
-        
-        // Priority
-        const priorityGroup = modalContent.createDiv({ cls: 'form-group' });
-        priorityGroup.createEl('label', {text: 'Priority:'});
-        const prioritySelect = priorityGroup.createEl('select');
-        
-        // Priority options
-        const priorities = [
-            { value: 1, text: 'High' },
-            { value: 2, text: 'Medium' },
-            { value: 3, text: 'Normal' },
-            { value: 4, text: 'Low' }
-        ];
-        
-        priorities.forEach(priority => {
-            const option = prioritySelect.createEl('option', {
-                text: priority.text,
-                value: priority.value.toString()
-            });
-            
-            if (priority.value === this.task.priority) {
-                option.selected = true;
-            }
-        });
-        
-        // Tags
-        const tagsGroup = modalContent.createDiv({ cls: 'form-group' });
-        tagsGroup.createEl('label', {text: 'Tags (comma separated):'});
-        const tagsInput = tagsGroup.createEl('input', {
-            type: 'text',
-            value: this.task.tags ? this.task.tags.join(', ') : ''
-        });
-        
-        // Buttons in a footer
-        const buttonContainer = contentEl.createDiv({ cls: 'modal-footer' });
-        
-        // Save button
-        const saveButton = buttonContainer.createEl('button', {
-            text: 'Save',
-            cls: 'submit-button'
-        });
-        
-        saveButton.addEventListener('click', () => {
-            // Prepare updated task
-            const updatedTask: Task = {
-                ...this.task,
-                title: titleInput.value,
-                description: descriptionInput.value || undefined,
-                status: statusSelect.value as OkrStatus,
-                priority: parseInt(prioritySelect.value),
-                completed: completedCheckbox.checked,
-                estimatedDuration: durationInput.value ? parseInt(durationInput.value) : undefined,
-                tags: tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
-            };
-            
-            // Process date and time
-            if (dateInput.value) {
-                const date = new Date(dateInput.value);
-                
-                // Add time if present
-                if (timeInput.value) {
-                    const [hours, minutes] = timeInput.value.split(':').map(Number);
-                    date.setHours(hours, minutes, 0, 0);
-                } else {
-                    // If no time specified, set to midnight
-                    date.setHours(0, 0, 0, 0);
-                }
-                
-                updatedTask.dueDate = date;
-            } else {
-                updatedTask.dueDate = null;
-            }
-            
-            // Call callback with updated task
-            this.onSubmit(updatedTask);
-            
-            // Close modal
-            this.close();
-        });
-        
-        // Cancel button
-        const cancelButton = buttonContainer.createEl('button', {
-            text: 'Cancel',
-            cls: 'cancel-button'
-        });
-        
-        cancelButton.addEventListener('click', () => {
-            this.close();
-        });
-    }
-    
-    onClose() {
-        const {contentEl} = this;
-        contentEl.empty();
-    }
-}
-
-// Modal class for creating tasks
-class TaskCreateModal extends Modal {
-    date: Date;
-    onSubmit: (task: Task) => void;
-    okrService: OkrService;
-    
-    constructor(app: App, date: Date, onSubmit: (task: Task) => void, okrService: OkrService) {
-        super(app);
-        this.date = date;
-        this.onSubmit = onSubmit;
-        this.okrService = okrService;
-    }
-    
-    onOpen() {
-        const {contentEl} = this;
-        
-        // Heading
-        contentEl.createEl('h2', {text: 'Create New Task'});
-        
-        // Container for content with scrollbar
-        const modalContent = contentEl.createDiv({ cls: 'modal-content' });
-        
-        // Title field
-        const titleGroup = modalContent.createDiv({ cls: 'form-group' });
-        titleGroup.createEl('label', {text: 'Title:'});
-        const titleInput = titleGroup.createEl('input', {
-            type: 'text',
-            placeholder: 'Enter task title'
-        });
-        
-        // Description field
-        const descriptionGroup = modalContent.createDiv({ cls: 'form-group' });
-        descriptionGroup.createEl('label', {text: 'Description (optional):'});
-        const descriptionInput = descriptionGroup.createEl('textarea', {
-            placeholder: 'Enter task description'
-        });
-        descriptionInput.style.width = '100%';
-        descriptionInput.style.minHeight = '80px';
-        
-        // Project selection
-        const projectGroup = modalContent.createDiv({ cls: 'form-group' });
-        projectGroup.createEl('label', {text: 'Project (optional):'});
-        const projectSelect = projectGroup.createEl('select');
-        
-        // Default "None" option
-        projectSelect.createEl('option', { text: 'None', value: '' });
-        
-        // Add projects from OKR model
-        const projects = this.okrService.getProjects();
-        projects.forEach(project => {
-            projectSelect.createEl('option', { 
-                text: project.title, 
-                value: project.id 
-            });
-        });
-        
-        // Date and time
-        const dateTimeGroup = modalContent.createDiv({ cls: 'form-group' });
-        dateTimeGroup.createEl('label', {text: 'Due date:'});
-        
-        const dateTimeContainer = dateTimeGroup.createDiv({ cls: 'date-time-container' });
-        
-        // Date
-        const dateInput = dateTimeContainer.createEl('input', {
-            type: 'date',
-            value: this.date.toISOString().split('T')[0]
-        });
-        
-        // Time
-        const timeInput = dateTimeContainer.createEl('input', {
-            type: 'time',
-            value: ''
-        });
-        
-        // Estimated duration
-        const durationGroup = modalContent.createDiv({ cls: 'form-group' });
-        durationGroup.createEl('label', {text: 'Estimated duration (minutes):'});
-        const durationInput = durationGroup.createEl('input', {
-            type: 'number',
-            value: '',
-            attr: { min: '1', step: '1' }
-        });
-        
-        // Status
-        const statusGroup = modalContent.createDiv({ cls: 'form-group' });
-        statusGroup.createEl('label', {text: 'Status:'});
-        const statusSelect = statusGroup.createEl('select');
-        
-        // Status options
-        const statuses: Array<{value: OkrStatus, text: string}> = [
-            { value: 'next-up', text: 'Next Up' },
-            { value: 'in-progress', text: 'In Progress' },
-            { value: 'waiting-on', text: 'Waiting On' },
-            { value: 'validating', text: 'Validating' },
-            { value: 'completed', text: 'Completed' },
-            { value: 'canceled', text: 'Canceled' }
-        ];
-        
-        statuses.forEach(status => {
-            const option = statusSelect.createEl('option', {
-                text: status.text,
-                value: status.value
-            });
-            
-            // Default to 'next-up'
-            if (status.value === 'next-up') {
-                option.selected = true;
-            }
-        });
-        
-        // Priority
-        const priorityGroup = modalContent.createDiv({ cls: 'form-group' });
-        priorityGroup.createEl('label', {text: 'Priority:'});
-        const prioritySelect = priorityGroup.createEl('select');
-        
-        // Priority options
-        const priorities = [
-            { value: 1, text: 'High' },
-            { value: 2, text: 'Medium' },
-            { value: 3, text: 'Normal' },
-            { value: 4, text: 'Low' }
-        ];
-        
-        priorities.forEach(priority => {
-            const option = prioritySelect.createEl('option', {
-                text: priority.text,
-                value: priority.value.toString()
-            });
-            
-            // Default: Normal (3)
-            if (priority.value === 3) {
-                option.selected = true;
-            }
-        });
-        
-        // Tags
-        const tagsGroup = modalContent.createDiv({ cls: 'form-group' });
-        tagsGroup.createEl('label', {text: 'Tags (comma separated):'});
-        const tagsInput = tagsGroup.createEl('input', {
-            type: 'text',
-            value: ''
-        });
-        
-        // Buttons in a footer
-        const buttonContainer = contentEl.createDiv({ cls: 'modal-footer' });
-        
-        // Create button
-        const createButton = buttonContainer.createEl('button', {
-            text: 'Create',
-            cls: 'submit-button'
-        });
-        
-        createButton.addEventListener('click', () => {
-            // Validation
-            if (!titleInput.value.trim()) {
-                new Notice('Please enter a title');
-                return;
-            }
-            
-            // Create new task
-            const newTask: any = {
-                id: Date.now().toString(), // Generate a temporary ID
-                title: titleInput.value,
-                content: titleInput.value, // Add content field
-                description: descriptionInput.value || undefined,
-                creationDate: new Date(),
-                status: statusSelect.value as OkrStatus,
-                priority: parseInt(prioritySelect.value),
-                tags: tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0),
-                sourcePath: '',
-                projectId: projectSelect.value || '',
-                dueDate: null,
-                completed: statusSelect.value === 'completed',
-                recurring: false,
-                estimatedDuration: durationInput.value ? parseInt(durationInput.value) : undefined
-            };
-            
-            // Process date and time
-            if (dateInput.value) {
-                const date = new Date(dateInput.value);
-                
-                // Add time if present
-                if (timeInput.value) {
-                    const [hours, minutes] = timeInput.value.split(':').map(Number);
-                    date.setHours(hours, minutes, 0, 0);
-                } else {
-                    // If no time specified, set to midnight
-                    date.setHours(0, 0, 0, 0);
-                }
-                
-                newTask.dueDate = date;
-            }
-            
-            // Call callback with new task
-            this.onSubmit(newTask);
-            
-            // Close modal
-            this.close();
-        });
-        
-        // Cancel button
-        const cancelButton = buttonContainer.createEl('button', {
-            text: 'Cancel',
-            cls: 'cancel-button'
-        });
-        
-        cancelButton.addEventListener('click', () => {
-            this.close();
-        });
-    }
-    
-    onClose() {
-        const {contentEl} = this;
-        contentEl.empty();
-    }
-}
-
-// Modal for time block actions
-class TimeBlockModal extends Modal {
-    block: TimeBlockInfo;
-    task: any;  // Change to any type
-    okrService: OkrService;
-    
-    constructor(app: App, block: TimeBlockInfo, task: any, okrService: OkrService) {
-        super(app);
-        this.block = block;
-        this.task = task;
-        this.okrService = okrService;
-    }
-    
-    onOpen() {
-        const {contentEl} = this;
-        
-        // Heading
-        contentEl.createEl('h2', {text: 'Time Block Actions'});
-        
-        // Container for content
-        const modalContent = contentEl.createDiv({ cls: 'modal-content' });
-        
-        // Block info
-        const infoGroup = modalContent.createDiv({ cls: 'form-group' });
-        infoGroup.createEl('h3', {text: 'Block Information'});
-        
-        // Task title
-        infoGroup.createEl('p', {text: `Task: ${this.task.title}`});
-        
-        // Time range
-        infoGroup.createEl('p', {text: `Time: ${this.block.start.toLocaleString()} - ${this.block.end.toLocaleString()}`});
-        
-        // Duration
-        infoGroup.createEl('p', {text: `Duration: ${this.block.duration} minutes`});
-        
-        // Status
-        infoGroup.createEl('p', {text: `Status: ${this.block.isCompleted ? 'Completed' : 'Not completed'}`});
-        
-        // Actions
-        const actionsGroup = modalContent.createDiv({ cls: 'form-group' });
-        actionsGroup.createEl('h3', {text: 'Actions'});
-        
-        // Mark as completed button
-        if (!this.block.isCompleted) {
-            const completeButton = actionsGroup.createEl('button', {
-                text: 'Mark as completed',
-                cls: 'submit-button'
-            });
-            
-            completeButton.style.marginBottom = '10px';
-            completeButton.style.width = '100%';
-            
-            completeButton.addEventListener('click', () => {
-                this.okrService.markTimeBlockCompleted(this.block.id);
-                this.close();
-                new Notice('Time block marked as completed');
-            });
-        }
-        
-        // Edit task button
-        const editTaskButton = actionsGroup.createEl('button', {
-            text: 'Edit task',
-            cls: 'submit-button'
-        });
-        
-        editTaskButton.style.marginBottom = '10px';
-        editTaskButton.style.width = '100%';
-        
-        editTaskButton.addEventListener('click', () => {
-            this.close();
-            
-            // Open task edit modal
-            const modal = new TaskEditModal(this.app, this.task, (updatedTask) => {
-                // Update task in the OKR model
-                this.okrService.updateTask(updatedTask);
-                
-                // Notification
-                new Notice('Task updated');
-            });
-            
-            modal.open();
-        });
-        
-        // Close button
-        const closeButton = actionsGroup.createEl('button', {
-            text: 'Close',
-            cls: 'cancel-button'
-        });
-        
-        closeButton.style.width = '100%';
-        
-        closeButton.addEventListener('click', () => {
-            this.close();
-        });
-    }
-    
-    onClose() {
-        const {contentEl} = this;
-        contentEl.empty();
     }
 }

@@ -59,9 +59,9 @@ const DEFAULT_CONFIG: OkrPersistenceConfig = {
     projectsFolder: 'OKRs/Projects',
     sprintsFolder: 'OKRs/Sprints',
     
-    objectiveTemplate: 'OBJ-${id}',
-    keyResultTemplate: 'KR-${id}',
-    projectTemplate: 'PRJ-${id}',
+    objectiveTemplate: '${year}-${title}-${id}',
+    keyResultTemplate: '${year}-${objectiveTitle}-${title}-${id}',
+    projectTemplate: '${year}-${keyResultTitle}-${title}-${id}',
     sprintTemplate: 'SB-${sprintNumber}-${month}M-${quarter}Q-${year}Y',
     
     metadataFields: {
@@ -136,10 +136,17 @@ export class OkrPersistenceService {
         // Ensure folder exists
         await this.ensureFolderExists(this.config.objectivesFolder);
         
+        // Get current year
+        const year = new Date().getFullYear();
+        
         // Generate filename
         const filename = this.generateFilename(
             this.config.objectiveTemplate,
-            { id: objective.id }
+            { 
+                id: objective.id,
+                title: this.sanitizeFilename(objective.title),
+                year: year
+            }
         );
         
         // Build full path
@@ -170,10 +177,33 @@ export class OkrPersistenceService {
         // Ensure folder exists
         await this.ensureFolderExists(this.config.keyResultsFolder);
         
+        // Get current year
+        const year = new Date().getFullYear();
+        
+        // Get parent objective title
+        let objectiveTitle = "unknown-objective";
+        // Hier müssen wir den Objective-Titel abrufen
+        const objective = this.app.vault.getMarkdownFiles()
+            .find(file => file.path.includes(this.config.objectivesFolder) && 
+                  file.path.includes(keyResult.objectiveId));
+        
+        if (objective) {
+            const content = await this.vault.read(objective);
+            const title = this.extractTitle(content);
+            if (title) {
+                objectiveTitle = this.sanitizeFilename(title);
+            }
+        }
+        
         // Generate filename
         const filename = this.generateFilename(
             this.config.keyResultTemplate,
-            { id: keyResult.id }
+            { 
+                id: keyResult.id,
+                title: this.sanitizeFilename(keyResult.title),
+                year: year,
+                objectiveTitle: objectiveTitle
+            }
         );
         
         // Build full path
@@ -204,10 +234,33 @@ export class OkrPersistenceService {
         // Ensure folder exists
         await this.ensureFolderExists(this.config.projectsFolder);
         
+        // Get current year
+        const year = new Date().getFullYear();
+        
+        // Get parent key result title
+        let keyResultTitle = "unknown-keyresult";
+        // Hier müssen wir den Key Result-Titel abrufen
+        const keyResult = this.app.vault.getMarkdownFiles()
+            .find(file => file.path.includes(this.config.keyResultsFolder) && 
+                  file.path.includes(project.keyResultId));
+        
+        if (keyResult) {
+            const content = await this.vault.read(keyResult);
+            const title = this.extractTitle(content);
+            if (title) {
+                keyResultTitle = this.sanitizeFilename(title);
+            }
+        }
+        
         // Generate filename
         const filename = this.generateFilename(
             this.config.projectTemplate,
-            { id: project.id }
+            { 
+                id: project.id,
+                title: this.sanitizeFilename(project.title),
+                year: year,
+                keyResultTitle: keyResultTitle
+            }
         );
         
         // Build full path
@@ -847,8 +900,8 @@ export class OkrPersistenceService {
         // Base task content
         let taskMarkdown = `- [${checkboxState}] ${task.title}`;
         
-        // Add task ID (for tracking/reference purposes)
-        taskMarkdown += ` #${task.id}`;
+        // Add task ID as a hidden reference tag (to keep it out of regular tag search)
+        taskMarkdown += ` #id:${task.id}`;
         
         // Add priority if not default
         if (task.priority < 4) {
@@ -1551,5 +1604,17 @@ export class OkrPersistenceService {
      */
     private escapeRegExp(string: string): string {
         return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+        /**
+     * Sanitize a string for use in a filename
+     * @param input String to sanitize
+     * @returns Sanitized string
+     */
+    private sanitizeFilename(input: string): string {
+        // Remove invalid characters and replace spaces with hyphens
+        return input.replace(/[\\/:*?"<>|]/g, '')
+                    .replace(/\s+/g, '-')
+                    .substring(0, 50); // Limit length
     }
 }
