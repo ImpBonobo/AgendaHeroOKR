@@ -1,5 +1,5 @@
 import { WorkspaceLeaf, ItemView, Notice, Modal, App } from 'obsidian';
-import AgendaHeroPlugin, { Task } from '../../main';
+import AgendaHeroOKRPlugin, { Task } from '../../main';
 import * as dragulaModule from 'dragula';
 // @ts-ignore
 const dragula = dragulaModule.default || dragulaModule;
@@ -25,7 +25,7 @@ interface ScrumColumn {
 }
 
 export class ScrumBoardView extends ItemView {
-    plugin: AgendaHeroPlugin;
+    plugin: AgendaHeroOKRPlugin;
     container: HTMLElement;
     headerContainer: HTMLElement;
     boardContainer: HTMLElement;
@@ -42,34 +42,34 @@ export class ScrumBoardView extends ItemView {
         { id: 'canceled', title: 'Canceled', status: 'canceled', visible: true }
     ];
 
-    constructor(leaf: WorkspaceLeaf, plugin: AgendaHeroPlugin) {
+    constructor(leaf: WorkspaceLeaf, plugin: AgendaHeroOKRPlugin) {
         super(leaf);
         this.plugin = plugin;
     }
 
     getViewType(): string {
-        return 'agenda-hero-scrumboard';
+        return 'agenda-hero-okr-scrumboard';
     }
 
     getDisplayText(): string {
-        return 'AgendaHero Scrum Board';
+        return 'AgendaHeroOKR Scrum Board';
     }
 
     async onOpen() {
         // Create main container
-        this.container = this.contentEl.createDiv({ cls: 'agenda-hero-scrumboard-container' });
+        this.container = this.contentEl.createDiv({ cls: 'agenda-hero-okr-scrumboard-container' });
         
         // Create header container
-        this.headerContainer = this.container.createDiv({ cls: 'agenda-hero-scrumboard-header' });
+        this.headerContainer = this.container.createDiv({ cls: 'agenda-hero-okr-scrumboard-header' });
         
         // Create board title
-        const titleContainer = this.headerContainer.createDiv({ cls: 'agenda-hero-scrumboard-title-container' });
+        const titleContainer = this.headerContainer.createDiv({ cls: 'agenda-hero-okr-scrumboard-title-container' });
         titleContainer.createEl('h3', { text: 'Scrum Board' });
         
         // sprint info
         if (this.currentBoard) {
             const sprintInfo = titleContainer.createEl('div', { 
-                cls: 'agenda-hero-sprint-info',
+                cls: 'agenda-hero-okr-sprint-info',
                 text: `Sprint: ${this.currentBoard.title} (${this.currentBoard.startDate.toLocaleDateString()} - ${this.currentBoard.endDate.toLocaleDateString()})`
             });
             sprintInfo.style.fontSize = "0.9em";
@@ -79,37 +79,37 @@ export class ScrumBoardView extends ItemView {
         // Create back button
         const backButton = titleContainer.createEl('button', {
             text: 'Back to Calendar',
-            cls: 'agenda-hero-back-button'
+            cls: 'agenda-hero-okr-back-button'
         });
         backButton.style.marginLeft = "10px";
         backButton.addEventListener('click', () => {
             // Open calendar view
-            this.plugin.activateView('agenda-hero-calendar');
+            this.plugin.activateView('agenda-hero-okr-calendar');
         });
 
         // Create board controls
-        const controlsContainer = this.headerContainer.createDiv({ cls: 'agenda-hero-scrumboard-controls' });
+        const controlsContainer = this.headerContainer.createDiv({ cls: 'agenda-hero-okr-scrumboard-controls' });
         
         // Create board selector dropdown
-        const boardSelector = controlsContainer.createEl('select', { cls: 'agenda-hero-board-selector' });
+        const boardSelector = controlsContainer.createEl('select', { cls: 'agenda-hero-okr-board-selector' });
         boardSelector.createEl('option', { text: 'Current Sprint', value: 'current' });
         
         // Create new board button
         const newBoardButton = controlsContainer.createEl('button', { 
             text: 'New Sprint',
-            cls: 'agenda-hero-new-board-button'
+            cls: 'agenda-hero-okr-new-board-button'
         });
         newBoardButton.addEventListener('click', () => {
             this.createNewBoard();
         });
         
         // Create column visibility controls
-        const columnVisibilityContainer = this.headerContainer.createDiv({ cls: 'agenda-hero-column-visibility' });
+        const columnVisibilityContainer = this.headerContainer.createDiv({ cls: 'agenda-hero-okr-column-visibility' });
         columnVisibilityContainer.createEl('span', { text: 'Show columns: ' });
         
         // Create checkbox for each column
         this.columns.forEach(column => {
-            const checkboxContainer = columnVisibilityContainer.createDiv({ cls: 'agenda-hero-column-checkbox-container' });
+            const checkboxContainer = columnVisibilityContainer.createDiv({ cls: 'agenda-hero-okr-column-checkbox-container' });
             
             const checkbox = checkboxContainer.createEl('input', {
                 type: 'checkbox',
@@ -129,10 +129,10 @@ export class ScrumBoardView extends ItemView {
         });
         
         // Create board container
-        this.boardContainer = this.container.createDiv({ cls: 'agenda-hero-scrumboard-board' });
+        this.boardContainer = this.container.createDiv({ cls: 'agenda-hero-okr-scrumboard-board' });
         
         // Create columns container
-        this.columnsContainer = this.boardContainer.createDiv({ cls: 'agenda-hero-scrumboard-columns' });
+        this.columnsContainer = this.boardContainer.createDiv({ cls: 'agenda-hero-okr-scrumboard-columns' });
         
         // Initialize current board
         await this.initializeCurrentBoard();
@@ -210,7 +210,7 @@ export class ScrumBoardView extends ItemView {
     renderColumn(column: ScrumColumn) {
         // Create column container
         const columnContainer = this.columnsContainer.createDiv({ 
-            cls: 'agenda-hero-scrumboard-column',
+            cls: 'agenda-hero-okr-scrumboard-column',
             attr: { 'data-column-id': column.id }
         });
         
@@ -224,12 +224,12 @@ export class ScrumBoardView extends ItemView {
         columnContainer.style.height = "100%";
         
         // Create column header
-        const columnHeader = columnContainer.createDiv({ cls: 'agenda-hero-column-header' });
+        const columnHeader = columnContainer.createDiv({ cls: 'agenda-hero-okr-column-header' });
         columnHeader.createEl('h4', { text: column.title });
         
         // Create task list container
         const taskListContainer = columnContainer.createDiv({ 
-            cls: 'agenda-hero-column-tasks',
+            cls: 'agenda-hero-okr-column-tasks',
             attr: { 'data-column-id': column.id }
         });
         
@@ -245,13 +245,13 @@ export class ScrumBoardView extends ItemView {
         if (columnTasks.length === 0) {
             taskListContainer.createEl('p', { 
                 text: 'No tasks',
-                cls: 'agenda-hero-empty-column'
+                cls: 'agenda-hero-okr-empty-column'
             });
         } else {
-            const taskList = taskListContainer.createEl('ul', { cls: 'agenda-hero-task-list' });
+            const taskList = taskListContainer.createEl('ul', { cls: 'agenda-hero-okr-task-list' });
             
             columnTasks.forEach(task => {
-                const taskItem = taskList.createEl('li', { cls: 'agenda-hero-task-item' });
+                const taskItem = taskList.createEl('li', { cls: 'agenda-hero-okr-task-item' });
                 
                 // Add task ID as data attribute for drag and drop
                 taskItem.setAttribute('data-task-id', task.id);
@@ -286,7 +286,7 @@ export class ScrumBoardView extends ItemView {
         // Create checkbox for status
         const checkbox = container.createEl('input', { 
             type: 'checkbox',
-            cls: 'agenda-hero-task-checkbox'
+            cls: 'agenda-hero-okr-task-checkbox'
         });
         checkbox.checked = task.completed;
         
@@ -301,21 +301,21 @@ export class ScrumBoardView extends ItemView {
         // Create priority indicator
         const priorityColors = ['#ff5252', '#ff9800', '#4caf50', '#2196f3'];
         const priorityIndicator = container.createEl('span', { 
-            cls: 'agenda-hero-priority',
+            cls: 'agenda-hero-okr-priority',
             attr: { style: `background-color: ${priorityColors[task.priority - 1]};` }
         });
         
         // Create task content container
-        const contentContainer = container.createEl('div', { cls: 'agenda-hero-task-content-container' });
+        const contentContainer = container.createEl('div', { cls: 'agenda-hero-okr-task-content-container' });
         
         // Create task title
         const content = contentContainer.createEl('span', { 
             text: task.content,
-            cls: 'agenda-hero-task-content'
+            cls: 'agenda-hero-okr-task-content'
         });
         
         if (task.completed) {
-            content.addClass('agenda-hero-completed');
+            content.addClass('agenda-hero-okr-completed');
         }
         
         // Create project name
@@ -323,7 +323,7 @@ export class ScrumBoardView extends ItemView {
         if (project) {
             contentContainer.createEl('div', {
                 text: project,
-                cls: 'agenda-hero-task-project'
+                cls: 'agenda-hero-okr-task-project'
             });
         }
         
@@ -331,12 +331,12 @@ export class ScrumBoardView extends ItemView {
         if (task.dueDate) {
             contentContainer.createEl('div', {
                 text: task.dueDate.toLocaleDateString(),
-                cls: 'agenda-hero-task-due-date'
+                cls: 'agenda-hero-okr-task-due-date'
             });
         }
         
         // Create action buttons
-        const actions = container.createEl('div', { cls: 'agenda-hero-task-actions' });
+        const actions = container.createEl('div', { cls: 'agenda-hero-okr-task-actions' });
         
         // Edit button
         const editButton = actions.createEl('button', { text: 'Edit' });
@@ -372,7 +372,7 @@ export class ScrumBoardView extends ItemView {
         
         // Get all column task containers
         const containers = Array.from(
-            this.columnsContainer.querySelectorAll('.agenda-hero-column-tasks')
+            this.columnsContainer.querySelectorAll('.agenda-hero-okr-column-tasks')
         );
         
         if (containers.length === 0) {
@@ -385,7 +385,7 @@ export class ScrumBoardView extends ItemView {
             this.drake = dragula(containers as any, {
                 moves: (el, container, handle, sibling) => {
                     // Only allow dragging task items
-                    return el ? el.classList.contains('agenda-hero-task-item') : false;
+                    return el ? el.classList.contains('agenda-hero-okr-task-item') : false;
                 },
                 accepts: (el, target, source, sibling) => {
                     // Allow dropping in any column
@@ -490,7 +490,7 @@ export class ScrumBoardView extends ItemView {
         // Listen for task updates
         this.registerEvent(
             // @ts-ignore - Obsidian API allows custom events
-            this.app.workspace.on('agenda-hero:tasks-updated', () => {
+            this.app.workspace.on('agenda-hero-okr:tasks-updated', () => {
                 this.renderBoard();
             })
         );

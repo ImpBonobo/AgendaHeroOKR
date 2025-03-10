@@ -1,14 +1,14 @@
-/* AgendaHero Styles */
+/* AgendaHeroOKR Styles */
 
 /* Allgemeine Stile */
-.agenda-hero-loading {
+.agenda-hero-okr-loading {
     padding: 20px;
     text-align: center;
     color: var(--text-muted);
     font-style: italic;
 }
 
-.agenda-hero-error {
+.agenda-okr-hero-error {
     padding: 20px;
     color: var(--text-error);
     background-color: var(--background-modifier-error);
@@ -17,7 +17,7 @@
 }
 
 /* Kalender-Container */
-.agenda-hero-calendar-container {
+.agenda-hero-okr-calendar-container {
     height: 100%;
     padding: 10px;
     overflow: auto;
@@ -101,7 +101,7 @@
 }
 
 /* Tasklisten-Stile */
-.agenda-hero-tasklist-container {
+.agenda-hero-okr-tasklist-container {
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -112,7 +112,7 @@
 }
 
 /* Header-Stile */
-.agenda-hero-tasklist-header {
+.agenda-hero-okr-tasklist-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -121,18 +121,18 @@
     margin-bottom: 10px;
 }
 
-.agenda-hero-tasklist-header h3 {
+.agenda-hero-okr-tasklist-header h3 {
     margin: 0;
     font-size: 1.2em;
     font-weight: 600;
 }
 
-.agenda-hero-view-buttons {
+.agenda-hero-okr-view-buttons {
     display: flex;
     gap: 5px;
 }
 
-.agenda-hero-view-button {
+.agenda-hero-okr-view-button {
     padding: 4px 8px;
     border-radius: 4px;
     background-color: var(--background-secondary);
@@ -143,17 +143,17 @@
     transition: background-color 0.2s;
 }
 
-.agenda-hero-view-button:hover {
+.agenda-hero-okr-view-button:hover {
     background-color: var(--background-modifier-hover);
 }
 
-.agenda-hero-view-button.active {
+.agenda-hero-okr-view-button.active {
     background-color: var(--interactive-accent);
     color: var(--text-on-accent);
 }
 
 /* Filter-Stile */
-.agenda-hero-filters {
+.agenda-hero-okr-filters {
     padding-bottom: 10px;
     border-bottom: 1px solid var(--background-modifier-border);
     margin-bottom: 10px;
@@ -161,25 +161,25 @@
     overflow-y: auto;
 }
 
-.agenda-hero-filters h3 {
+.agenda-hero-okr-filters h3 {
     margin: 0 0 10px 0;
     font-size: 1em;
     font-weight: 600;
 }
 
-.agenda-hero-filter-group {
+.agenda-hero-okr-filter-group {
     margin-bottom: 8px;
 }
 
-.agenda-hero-filter-group label {
+.agenda-hero-okr-filter-group label {
     display: block;
     margin-bottom: 4px;
     font-size: 0.85em;
     font-weight: 600;
 }
 
-.agenda-hero-filter-group select,
-.agenda-hero-filter-group input {
+.agenda-hero-okr-filter-group select,
+.agenda-hero-okr-filter-group input {
     width: 100%;
     padding: 6px;
     border-radius: 4px;
@@ -188,20 +188,20 @@
 }
 
 /* Task-Liste */
-.agenda-hero-tasks {
+.agenda-hero-okr-tasks {
     flex-grow: 1;
     overflow-y: auto;
     padding-right: 5px;
     max-height: calc(100% - 150px); /* Maximale Höhe begrenzen, um Platz für Header und Filter zu lassen */
 }
 
-.agenda-hero-task-list {
+.agenda-hero-okr-task-list {
     list-style-type: none;
     padding: 0;
     margin: 0;
 }
 
-.agenda-hero-task-item {
+.agenda-hero-okr-task-item {
     display: flex;
     align-items: flex-start;
     padding: 8px;
@@ -215,16 +215,16 @@
     min-height: 24px; /* Minimale Höhe für Checkbox und Text */
 }
 
-.agenda-hero-task-item:hover {
+.agenda-hero-okr-task-item:hover {
     transform: translateY(-2px);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.agenda-hero-task-item:active {
+.agenda-hero-okr-task-item:active {
     cursor: grabbing;
 }
 
-.agenda-hero-priority {
+.agenda-hero-okr-priority {
     width: 12px;
     height: 12px;
     border-radius: 50%;
@@ -232,7 +232,7 @@
     flex-shrink: 0;
 }
 
-.agenda-hero-task-content-container {
+.agenda-hero-okr-task-content-container {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -240,31 +240,31 @@
     margin: 0 8px;
 }
 
-.agenda-hero-task-content {
+.agenda-hero-okr-task-content {
     margin: 0;
     word-break: break-word;
     font-weight: 500;
 }
 
-.agenda-hero-task-content.agenda-hero-completed {
+.agenda-hero-okr-task-content.agenda-hero-completed {
     text-decoration: line-through;
     opacity: 0.7;
 }
 
-.agenda-hero-due-date {
+.agenda-hero-okr-due-date {
     font-size: 0.8em;
     color: var(--text-muted);
     margin-top: 2px;
 }
 
-.agenda-hero-task-actions {
+.agenda-hero-okr-task-actions {
     display: flex;
     gap: 4px;
     margin-left: 8px;
     flex-shrink: 0;
 }
 
-.agenda-hero-task-actions button {
+.agenda-hero-okr-task-actions button {
     font-size: 0.8em;
     padding: 2px 6px;
     background-color: var(--background-modifier-border);
@@ -274,30 +274,30 @@
     cursor: pointer;
 }
 
-.agenda-hero-task-actions button:hover {
+.agenda-hero-okr-task-actions button:hover {
     background-color: var(--interactive-accent);
     color: var(--text-on-accent);
 }
 
 /* Test-View-Stile */
-.agenda-hero-test-container {
+.agenda-hero-okr-test-container {
     padding: 20px;
 }
 
-.agenda-hero-test-content {
+.agenda-hero-okr-test-content {
     margin: 20px 0;
     padding: 15px;
     background-color: var(--background-secondary);
     border-radius: 5px;
 }
 
-.agenda-hero-test-buttons {
+.agenda-hero-okr-test-buttons {
     display: flex;
     gap: 10px;
     margin-top: 20px;
 }
 
-.agenda-hero-test-buttons button {
+.agenda-hero-okr-test-buttons button {
     padding: 8px 12px;
 }
 
@@ -328,7 +328,7 @@
     padding-right: 10px;
 }
 
-.agenda-hero-edit-form {
+.agenda-hero-okr-edit-form {
     max-height: calc(80vh - 150px);
     overflow-y: auto;
     padding-right: 10px;
@@ -377,7 +377,7 @@
     user-select: none;
 }
 
-.agenda-hero-dragging .fc-timegrid-slot:hover {
+.agenda-hero-okr-dragging .fc-timegrid-slot:hover {
     background-color: rgba(66, 135, 245, 0.1);
 }
 
@@ -388,17 +388,17 @@
 }
 
 /* Verbesserte Tasklisten-Stile */
-.agenda-hero-task-project,
-.agenda-hero-task-due-date,
-.agenda-hero-task-priority-text,
-.agenda-hero-task-recurring,
-.agenda-hero-task-tags {
+.agenda-hero-okr-task-project,
+.agenda-hero-okr-task-due-date,
+.agenda-hero-okr-task-priority-text,
+.agenda-hero-okr-task-recurring,
+.agenda-hero-okr-task-tags {
     font-size: 0.8em;
     color: var(--text-muted);
     margin-top: 2px;
 }
 
-.agenda-hero-task-tag {
+.agenda-hero-okr-task-tag {
     background-color: var(--background-modifier-border);
     padding: 1px 4px;
     border-radius: 3px;
@@ -406,17 +406,17 @@
 }
 
 /* Drag & Drop zwischen Taskliste und Kalender */
-.agenda-hero-dragging-task {
+.agenda-hero-okr-dragging-task {
     cursor: grabbing !important;
 }
 
-.agenda-hero-calendar-drop-target {
+.agenda-hero-okr-calendar-drop-target {
     box-shadow: inset 0 0 0 2px #4287f5 !important;
     background-color: rgba(66, 135, 245, 0.05) !important;
 }
 
 /* Task-Bearbeitungsformular */
-.agenda-hero-edit-form {
+.agenda-hero-okr-edit-form {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -492,20 +492,20 @@
 }
 
 /* Anpassungen für die Taskliste als Seitenleiste */
-.workspace-split.mod-vertical .workspace-leaf .agenda-hero-tasklist-container {
+.workspace-split.mod-vertical .workspace-leaf .agenda-hero-okr-tasklist-container {
     width: 300px;
     max-width: 300px;
     border-right: 1px solid var(--background-modifier-border);
 }
 
-.workspace-split.mod-horizontal .workspace-leaf .agenda-hero-tasklist-container {
+.workspace-split.mod-horizontal .workspace-leaf .agenda-hero-okr-tasklist-container {
     height: 300px;
     max-height: 300px;
     border-bottom: 1px solid var(--background-modifier-border);
 }
 
 /* Verbesserte Stile für die Checkbox und Aktionen */
-.agenda-hero-task-checkbox {
+.agenda-hero-okr-task-checkbox {
     flex-shrink: 0;
     margin-right: 8px;
     width: 16px;
@@ -547,7 +547,7 @@
 }
 
 
-.agenda-hero-urgency-indicator {
+.agenda-hero-okr-urgency-indicator {
     width: 8px;
     height: 8px;
     border-radius: 50%;
@@ -605,17 +605,17 @@
     gap: 20px;
 }
 
-.agenda-hero-objective-container,
-.agenda-hero-kr-container,
-.agenda-hero-project-container {
+.agenda-hero-okr-objective-container,
+.agenda-hero-okr-kr-container,
+.agenda-hero-okr-project-container {
     border: 1px solid var(--background-modifier-border);
     border-radius: 6px;
     overflow: hidden;
 }
 
-.agenda-hero-objective-header,
-.agenda-hero-kr-header,
-.agenda-hero-project-header {
+.agenda-hero-okr-objective-header,
+.agenda-hero-okr-kr-header,
+.agenda-hero-okr-project-header {
     display: flex;
     align-items: center;
     padding: 10px;
@@ -623,28 +623,28 @@
     cursor: pointer;
 }
 
-.agenda-hero-objective-content,
-.agenda-hero-kr-content,
-.agenda-hero-project-content {
+.agenda-hero-okr-objective-content,
+.agenda-hero-okr-kr-content,
+.agenda-hero-okr-project-content {
     padding: 10px;
     background-color: var(--background-primary);
 }
 
-.agenda-hero-expand-button {
+.agenda-hero-okr-expand-button {
     width: 20px;
     display: inline-block;
     cursor: pointer;
     text-align: center;
 }
 
-.agenda-hero-objective-title,
-.agenda-hero-kr-title,
-.agenda-hero-project-title {
+.agenda-hero-okr-objective-title,
+.agenda-hero-okr-kr-title,
+.agenda-hero-okr-project-title {
     margin: 0;
     flex-grow: 1;
 }
 
-.agenda-hero-status-badge {
+.agenda-hero-okr-status-badge {
     font-size: 0.8em;
     padding: 2px 6px;
     border-radius: 12px;
@@ -652,42 +652,42 @@
     white-space: nowrap;
 }
 
-.agenda-hero-status-future {
+.agenda-okr-hero-status-future {
     background-color: #607d8b;
     color: white;
 }
 
-.agenda-hero-status-next-up {
+.agenda-hero-okr-status-next-up {
     background-color: #2196f3;
     color: white;
 }
 
-.agenda-hero-status-in-progress {
+.agenda-hero-okr-status-in-progress {
     background-color: #ff9800;
     color: white;
 }
 
-.agenda-hero-status-waiting-on {
+.agenda-hero-okr-status-waiting-on {
     background-color: #9c27b0;
     color: white;
 }
 
-.agenda-hero-status-validating {
+.agenda-hero-okr-status-validating {
     background-color: #009688;
     color: white;
 }
 
-.agenda-hero-status-completed {
+.agenda-hero-okr-status-completed {
     background-color: #4caf50;
     color: white;
 }
 
-.agenda-hero-status-canceled {
+.agenda-hero-okr-status-canceled {
     background-color: #f44336;
     color: white;
 }
 
-.agenda-hero-progress-container {
+.agenda-hero-okr-progress-container {
     width: 100px;
     height: 10px;
     background-color: var(--background-modifier-border);
@@ -697,12 +697,12 @@
     position: relative;
 }
 
-.agenda-hero-progress-bar {
+.agenda-hero-okr-progress-bar {
     height: 100%;
     background-color: var(--interactive-accent);
 }
 
-.agenda-hero-progress-text {
+.agenda-hero-okr-progress-text {
     position: absolute;
     top: -2px;
     right: -30px;
@@ -710,12 +710,12 @@
     color: var(--text-muted);
 }
 
-.agenda-hero-button-container {
+.agenda-hero-okr-button-container {
     display: flex;
     gap: 5px;
 }
 
-.agenda-hero-small-button {
+.agenda-hero-okr-small-button {
     padding: 3px 6px;
     font-size: 0.7em;
     background-color: var(--background-modifier-border);
@@ -724,18 +724,18 @@
     cursor: pointer;
 }
 
-.agenda-hero-description {
+.agenda-hero-okr-description {
     font-style: italic;
     color: var(--text-muted);
     margin-bottom: 10px;
 }
 
-.agenda-hero-date-range {
+.agenda-hero-okr-date-range {
     font-size: 0.8em;
     color: var(--text-muted);
 }
 
-.agenda-hero-empty-message {
+.agenda-hero-okr-empty-message {
     font-style: italic;
     color: var(--text-muted);
     text-align: center;
@@ -743,52 +743,52 @@
 }
 
 /* Task styling */
-.agenda-hero-task-list {
+.agenda-hero-okr-task-list {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.agenda-hero-task-item {
+.agenda-hero-okr-task-item {
     display: flex;
     align-items: flex-start;
     padding: 5px;
     border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.agenda-hero-task-item:last-child {
+.agenda-hero-okr-task-item:last-child {
     border-bottom: none;
 }
 
-.agenda-hero-task-checkbox {
+.agenda-hero-okr-task-checkbox {
     margin-right: 8px;
     flex-shrink: 0;
 }
 
-.agenda-hero-task-content-container {
+.agenda-hero-okr-task-content-container {
     flex-grow: 1;
 }
 
-.agenda-hero-task-content {
+.agenda-hero-okr-task-content {
     word-break: break-word;
 }
 
-.agenda-hero-task-content.completed {
+.agenda-hero-okr-task-content.completed {
     text-decoration: line-through;
     color: var(--text-muted);
 }
 
-.agenda-hero-task-due-date {
+.agenda-hero-okr-task-due-date {
     font-size: 0.8em;
     color: var(--text-muted);
 }
 
-.agenda-hero-task-actions {
+.agenda-hero-okr-task-actions {
     margin-left: 8px;
 }
 
 /* OKR Modal Styles */
-.agenda-hero-form {
+.agenda-hero-okr-form {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -798,30 +798,30 @@
     padding-right: 10px;
 }
 
-.agenda-hero-parent-info {
+.agenda-hero-okr-parent-info {
     background-color: var(--background-secondary);
     padding: 10px;
     border-radius: 5px;
     margin-bottom: 20px;
 }
 
-.agenda-hero-parent-title {
+.agenda-hero-okr-parent-title {
     margin: 0;
     font-weight: 600;
 }
 
-.agenda-hero-modal-buttons {
+.agenda-hero-okr-modal-buttons {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
     margin-top: 20px;
 }
 
-.agenda-hero-metric-section,
-.agenda-hero-sprint-section,
-.agenda-hero-recurring-section,
-.agenda-hero-planning-section,
-.agenda-hero-windows-container {
+.agenda-hero-okr-metric-section,
+.agenda-hero-okr-sprint-section,
+.agenda-hero-okr-recurring-section,
+.agenda-hero-okr-planning-section,
+.agenda-hero-okr-windows-container {
     border: 1px solid var(--background-modifier-border);
     border-radius: 5px;
     padding: 10px;
@@ -829,9 +829,9 @@
     margin-bottom: 10px;
 }
 
-.agenda-hero-metric-section h3,
-.agenda-hero-sprint-section h3,
-.agenda-hero-planning-section h3 {
+.agenda-hero-okr-metric-section h3,
+.agenda-hero-okr-sprint-section h3,
+.agenda-hero-okr-planning-section h3 {
     margin-top: 0;
     margin-bottom: 10px;
     font-size: 1em;
@@ -876,14 +876,14 @@
 }
 
 /* Scheduling controls */
-.agenda-hero-scheduling-controls {
+.agenda-hero-okr-scheduling-controls {
     display: flex;
     gap: 10px;
     margin: 10px 0;
     flex-wrap: wrap;
 }
 
-.agenda-hero-scheduling-button {
+.agenda-hero-okr-scheduling-button {
     padding: 6px 12px;
     border-radius: 4px;
     border: 1px solid var(--background-modifier-border);
@@ -895,11 +895,11 @@
     gap: 5px;
 }
 
-.agenda-hero-scheduling-button:hover {
+.agenda-hero-okr-scheduling-button:hover {
     background-color: var(--background-modifier-hover);
 }
 
-.agenda-hero-scheduling-tooltip {
+.agenda-hero-okr-scheduling-tooltip {
     position: fixed;
     z-index: 9999;
     background-color: var(--background-primary);
@@ -931,7 +931,7 @@
 }
 
 /* Fix dropdown text visibility issues */
-.agenda-hero-view-button, 
+.agenda-hero-okr-view-button, 
 select, 
 option {
     color: var(--text-normal) !important;

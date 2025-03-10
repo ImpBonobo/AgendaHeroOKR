@@ -13,7 +13,7 @@ import * as path from 'path';
 const { sendBatchRequests } = require('./src/utils/anthropic-batch');
 
 // Interfaces
-export interface AgendaHeroSettings {
+export interface AgendaHeroOKRSettings {
     taskSources: string[];
     defaultView: string;
     showWeekNumbers: boolean;
@@ -47,7 +47,7 @@ export interface AgendaHeroSettings {
     sprintStartDay: number; // 0-6, where 0 is Sunday
 }
 
-const DEFAULT_SETTINGS: AgendaHeroSettings = {
+const DEFAULT_SETTINGS: AgendaHeroOKRSettings = {
     taskSources: ["Markdown Checkboxes"],
     defaultView: "dayGridMonth", // Changed from "week" to "dayGridMonth" as default
     showWeekNumbers: true,
@@ -136,8 +136,8 @@ export interface Task {
     splitUpBlock?: number;
 }
 
-export default class AgendaHeroPlugin extends Plugin {
-    settings: AgendaHeroSettings;
+export default class AgendaHeroOKRPlugin extends Plugin {
+    settings: AgendaHeroOKRSettings;
     tasks: Task[] = [];
     okrService: OkrService;
     okrServiceInitialized: boolean = false;
@@ -150,33 +150,33 @@ export default class AgendaHeroPlugin extends Plugin {
 
         // Test view registration (for easy diagnosis)
         this.registerView(
-            'agenda-hero-test',
+            'agenda-hero-okr-test',
             (leaf) => new TestView(leaf, this)
         );
 
         // Main view (Calendar view) registration
         this.registerView(
-            'agenda-hero-calendar',
+            'agenda-hero-okr-calendar',
             (leaf) => new CalendarView(leaf, this)
         );
 
         // Sidebar for tasks registration
         this.registerView(
-            'agenda-hero-tasklist',
+            'agenda-hero-okr-tasklist',
             (leaf) => new TaskListView(leaf, this)
         );
         
         // Scrum board view registration
         this.registerView(
-            'agenda-hero-scrumboard',
+            'agenda-hero-okr-scrumboard',
             (leaf) => new ScrumBoardView(leaf, this)
         );
 
         // Ribbon icon to open test view
-        this.addRibbonIcon('bug', 'Open AgendaHero Test', () => {
+        this.addRibbonIcon('bug', 'Open AgendaHeroOKR Test', () => {
             try {
-                this.activateView('agenda-hero-test');
-                new Notice('Opening AgendaHero Test view...');
+                this.activateView('agenda-hero-okr-test');
+                new Notice('Opening AgendaHeroOKR Test view...');
             } catch (error) {
                 new Notice(`Error opening Test view: ${error.message}`);
                 console.error('Error opening Test view:', error);
@@ -184,11 +184,11 @@ export default class AgendaHeroPlugin extends Plugin {
         });
 
         // Ribbon icon to open calendar view
-        this.addRibbonIcon('calendar-with-checkmark', 'Open AgendaHero Calendar', () => {
+        this.addRibbonIcon('calendar-with-checkmark', 'Open AgendaHeroOKR Calendar', () => {
             try {
                 // Open calendar and task list side by side
                 this.openCalendarWithTasklist();
-                new Notice('Opening AgendaHero Calendar...');
+                new Notice('Opening AgendaHeroOKR Calendar...');
             } catch (error) {
                 new Notice(`Error opening Calendar view: ${error.message}`);
                 console.error('Error opening Calendar view:', error);
@@ -197,35 +197,35 @@ export default class AgendaHeroPlugin extends Plugin {
 
         // Command to open calendar view
         this.addCommand({
-            id: 'open-agenda-hero-calendar',
-            name: 'Open AgendaHero Calendar',
+            id: 'open-agenda-hero-okr-calendar',
+            name: 'Open AgendaHeroOKR Calendar',
             callback: () => {
-                this.activateView('agenda-hero-calendar');
+                this.activateView('agenda-hero-okr-calendar');
             }
         });
 
         // Command to open task list
         this.addCommand({
-            id: 'open-agenda-hero-tasklist',
-            name: 'Open AgendaHero Task List',
+            id: 'open-agenda-hero-okr-tasklist',
+            name: 'Open AgendaHeroOKR Task List',
             callback: () => {
-                this.activateView('agenda-hero-tasklist');
+                this.activateView('agenda-hero-okr-tasklist');
             }
         });
         
         // Command to open scrum board
         this.addCommand({
-            id: 'open-agenda-hero-scrumboard',
-            name: 'Open AgendaHero Scrum Board',
+            id: 'open-agenda-hero-okr-scrumboard',
+            name: 'Open AgendaHeroOKR Scrum Board',
             callback: () => {
-                this.activateView('agenda-hero-scrumboard');
+                this.activateView('agenda-hero-okr-scrumboard');
             }
         });
 
         // Command to open calendar and task list side by side
         this.addCommand({
-            id: 'open-agenda-hero-combined',
-            name: 'Open AgendaHero Calendar with Task List',
+            id: 'open-agenda-hero-okr-combined',
+            name: 'Open AgendaHeroOKR Calendar with Task List',
             callback: () => {
                 this.openCalendarWithTasklist();
             }
@@ -233,10 +233,10 @@ export default class AgendaHeroPlugin extends Plugin {
 
         // Command to open test view
         this.addCommand({
-            id: 'open-agenda-hero-test',
-            name: 'Open AgendaHero Test View',
+            id: 'open-agenda-hero-okr-test',
+            name: 'Open AgendaHero-okr Test View',
             callback: () => {
-                this.activateView('agenda-hero-test');
+                this.activateView('agenda-hero-okr-test');
             }
         });
 
@@ -250,7 +250,7 @@ export default class AgendaHeroPlugin extends Plugin {
         });
 
         // Add settings
-        this.addSettingTab(new AgendaHeroSettingTab(this.app, this));
+        this.addSettingTab(new AgendaHeroOKRSettingTab(this.app, this));
 
         // Initial task loading
         await this.loadTasks();
@@ -304,11 +304,11 @@ export default class AgendaHeroPlugin extends Plugin {
         this.addRibbonIcon('target', 'Open OKR Hierarchy', () => {
             this.activateView('agenda-hero-okr-hierarchy');
         });
-        
+
         this.okrService.importMarkdownTasks();
 
         // Success message
-        new Notice('AgendaHero has been loaded!');
+        new Notice('AgendaHeroOKR has been loaded!');
     }
     
     /**
@@ -327,7 +327,7 @@ async openCalendarWithTasklist() {
         
         // Open calendar in this leaf
         await leaf.setViewState({
-            type: 'agenda-hero-calendar',
+            type: 'agenda-hero-okr-calendar',
             active: true,
         });
         
@@ -336,7 +336,7 @@ async openCalendarWithTasklist() {
         
         // Open task list in this leaf
         await taskLeaf.setViewState({
-            type: 'agenda-hero-tasklist',
+            type: 'agenda-hero-okr-tasklist',
             active: false,
         });
         
@@ -347,7 +347,7 @@ async openCalendarWithTasklist() {
         // Wait a moment for the DOM to update
         setTimeout(() => {
             // Find the DOM element of the leaf
-            const taskLeafEl = document.querySelector(`.workspace-leaf[data-type="agenda-hero-tasklist"]`) as HTMLElement;
+            const taskLeafEl = document.querySelector(`.workspace-leaf[data-type="agenda-hero-okr-tasklist"]`) as HTMLElement;
             if (taskLeafEl) {
                 taskLeafEl.style.width = '300px';
                 taskLeafEl.style.minWidth = '250px';
@@ -601,7 +601,7 @@ async openCalendarWithTasklist() {
 
     notifyTasksUpdated() {
         // Trigger an event so views update
-        this.app.workspace.trigger('agenda-hero:tasks-updated');
+        this.app.workspace.trigger('agenda-hero-okr:tasks-updated');
     }
 
     async updateTaskInFile(task: Task) {
@@ -704,10 +704,10 @@ async openCalendarWithTasklist() {
 }
 
 // Settings Tab
-class AgendaHeroSettingTab extends PluginSettingTab {
-    plugin: AgendaHeroPlugin;
+class AgendaHeroOKRSettingTab extends PluginSettingTab {
+    plugin: AgendaHeroOKRPlugin;
 
-    constructor(app: App, plugin: AgendaHeroPlugin) {
+    constructor(app: App, plugin: AgendaHeroOKRPlugin) {
         super(app, plugin);
         this.plugin = plugin;
     }
@@ -717,10 +717,10 @@ class AgendaHeroSettingTab extends PluginSettingTab {
 
         containerEl.empty();
 
-        containerEl.createEl('h2', {text: 'AgendaHero Settings'});
+        containerEl.createEl('h2', {text: 'AgendaHeroOKR Settings'});
         
         // Tab buttons for different setting sections
-        const tabContainer = containerEl.createDiv({ cls: 'agenda-hero-settings-tabs' });
+        const tabContainer = containerEl.createDiv({ cls: 'agenda-hero-okr-settings-tabs' });
         tabContainer.style.display = 'flex';
         tabContainer.style.marginBottom = '20px';
         tabContainer.style.borderBottom = '1px solid var(--background-modifier-border)';
@@ -739,7 +739,7 @@ class AgendaHeroSettingTab extends PluginSettingTab {
         tabs.forEach(tab => {
             const button = tabContainer.createEl('button', { 
                 text: tab.name,
-                cls: 'agenda-hero-settings-tab'
+                cls: 'agenda-hero-okr-settings-tab'
             });
             button.style.padding = '8px 16px';
             button.style.marginRight = '8px';
@@ -754,7 +754,7 @@ class AgendaHeroSettingTab extends PluginSettingTab {
         // Create content containers
         const contentContainers: Record<string, HTMLElement> = {};
         tabs.forEach(tab => {
-            const container = containerEl.createDiv({ cls: 'agenda-hero-settings-content' });
+            const container = containerEl.createDiv({ cls: 'agenda-hero-okr-settings-content' });
             container.style.display = 'none'; // Hide initially
             contentContainers[tab.id] = container;
         });

@@ -1,14 +1,14 @@
 import { ItemView, WorkspaceLeaf, Notice } from 'obsidian';
 import { OkrService } from '../services/okr-service';
-import AgendaHeroPlugin from '../../main';
+import AgendaHeroOKRPlugin from '../../main';
 import { Objective, KeyResult, Project, Task, getStatusDisplayText } from '../models/okr-models';
 import { ObjectiveModal, KeyResultModal, ProjectModal, TaskModal } from '../components/okr-modals';
 
 export class OkrHierarchyView extends ItemView {
-    plugin: AgendaHeroPlugin;
+    plugin: AgendaHeroOKRPlugin;
     okrService: OkrService;
     
-    constructor(leaf: WorkspaceLeaf, plugin: AgendaHeroPlugin) {
+    constructor(leaf: WorkspaceLeaf, plugin: AgendaHeroOKRPlugin) {
         super(leaf);
         this.plugin = plugin;
         this.okrService = plugin.okrService;
@@ -61,7 +61,7 @@ export class OkrHierarchyView extends ItemView {
         if (objectives.length === 0) {
             container.createEl('p', { 
                 text: 'No objectives found. Click "New Objective" to create one.',
-                cls: 'agenda-hero-empty-message'
+                cls: 'agenda-hero-okr-empty-message'
             });
             return;
         }
@@ -75,17 +75,17 @@ export class OkrHierarchyView extends ItemView {
     renderObjective(container: HTMLElement, objective: Objective) {
         // Create objective container
         const objectiveContainer = container.createEl('div', { 
-            cls: 'agenda-hero-objective-container' 
+            cls: 'agenda-hero-okr-objective-container' 
         });
         
         // Create header row
         const headerRow = objectiveContainer.createEl('div', { 
-            cls: 'agenda-hero-objective-header'
+            cls: 'agenda-hero-okr-objective-header'
         });
         
         // Add expand/collapse button
         const expandButton = headerRow.createEl('span', { 
-            cls: 'agenda-hero-expand-button'
+            cls: 'agenda-hero-okr-expand-button'
         });
         expandButton.innerHTML = '▼';
         expandButton.addEventListener('click', () => {
@@ -98,38 +98,38 @@ export class OkrHierarchyView extends ItemView {
         // Add title
         const title = headerRow.createEl('h3', { 
             text: objective.title,
-            cls: 'agenda-hero-objective-title'
+            cls: 'agenda-hero-okr-objective-title'
         });
         
         // Add status badge
         headerRow.createEl('span', {
             text: getStatusDisplayText(objective.status),
-            cls: `agenda-hero-status-badge agenda-hero-status-${objective.status}`
+            cls: `agenda-hero-okr-status-badge agenda-hero-okr-status-${objective.status}`
         });
         
         // Add progress
         const progressContainer = headerRow.createEl('div', { 
-            cls: 'agenda-hero-progress-container'
+            cls: 'agenda-hero-okr-progress-container'
         });
         
         const progressBar = progressContainer.createEl('div', { 
-            cls: 'agenda-hero-progress-bar'
+            cls: 'agenda-hero-okr-progress-bar'
         });
         progressBar.style.width = `${objective.progress}%`;
         
         progressContainer.createEl('span', { 
             text: `${objective.progress}%`,
-            cls: 'agenda-hero-progress-text'
+            cls: 'agenda-hero-okr-progress-text'
         });
         
         // Add buttons
         const buttonContainer = headerRow.createEl('div', { 
-            cls: 'agenda-hero-button-container'
+            cls: 'agenda-hero-okr-button-container'
         });
         
         const editButton = buttonContainer.createEl('button', { 
             text: 'Edit',
-            cls: 'agenda-hero-small-button'
+            cls: 'agenda-hero-okr-small-button'
         });
         editButton.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -139,7 +139,7 @@ export class OkrHierarchyView extends ItemView {
         // Add delete button for objectives
         const deleteButton = buttonContainer.createEl('button', { 
             text: 'Delete',
-            cls: 'agenda-hero-small-button'
+            cls: 'agenda-hero-okr-small-button'
         });
         deleteButton.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -157,7 +157,7 @@ export class OkrHierarchyView extends ItemView {
         
         const addKrButton = buttonContainer.createEl('button', { 
             text: 'Add KR',
-            cls: 'agenda-hero-small-button'
+            cls: 'agenda-hero-okr-small-button'
         });
         addKrButton.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -166,27 +166,27 @@ export class OkrHierarchyView extends ItemView {
         
         // Create content container
         const objectiveContent = objectiveContainer.createEl('div', { 
-            cls: 'agenda-hero-objective-content'
+            cls: 'agenda-hero-okr-objective-content'
         });
         
         // Add description if present
         if (objective.description) {
             objectiveContent.createEl('p', { 
                 text: objective.description,
-                cls: 'agenda-hero-description'
+                cls: 'agenda-hero-okr-description'
             });
         }
         
         // Add date range
         objectiveContent.createEl('p', { 
             text: `${objective.startDate.toLocaleDateString()} - ${objective.endDate.toLocaleDateString()}`,
-            cls: 'agenda-hero-date-range'
+            cls: 'agenda-hero-okr-date-range'
         });
         
         // Add key results
         if (objective.keyResults && objective.keyResults.length > 0) {
             const krContainer = objectiveContent.createEl('div', { 
-                cls: 'agenda-hero-kr-container'
+                cls: 'agenda-hero-okr-kr-container'
             });
             
             krContainer.createEl('h4', { text: 'Key Results' });
@@ -197,7 +197,7 @@ export class OkrHierarchyView extends ItemView {
         } else {
             objectiveContent.createEl('p', { 
                 text: 'No key results yet. Click "Add KR" to create one.',
-                cls: 'agenda-hero-empty-message'
+                cls: 'agenda-hero-okr-empty-message'
             });
         }
     }
@@ -205,17 +205,17 @@ export class OkrHierarchyView extends ItemView {
     renderKeyResult(container: HTMLElement, keyResult: KeyResult) {
         // Create key result container
         const krContainer = container.createEl('div', { 
-            cls: 'agenda-hero-kr-container' 
+            cls: 'agenda-hero-okr-kr-container' 
         });
         
         // Create header row
         const headerRow = krContainer.createEl('div', { 
-            cls: 'agenda-hero-kr-header'
+            cls: 'agenda-hero-okr-kr-header'
         });
         
         // Add expand/collapse button
         const expandButton = headerRow.createEl('span', { 
-            cls: 'agenda-hero-expand-button'
+            cls: 'agenda-hero-okr-expand-button'
         });
         expandButton.innerHTML = '▼';
         expandButton.addEventListener('click', () => {
@@ -228,38 +228,38 @@ export class OkrHierarchyView extends ItemView {
         // Add title
         headerRow.createEl('h4', { 
             text: keyResult.title,
-            cls: 'agenda-hero-kr-title'
+            cls: 'agenda-hero-okr-kr-title'
         });
         
         // Add status badge
         headerRow.createEl('span', {
             text: getStatusDisplayText(keyResult.status),
-            cls: `agenda-hero-status-badge agenda-hero-status-${keyResult.status}`
+            cls: `agenda-hero-okr-status-badge agenda-hero-okr-status-${keyResult.status}`
         });
         
         // Add progress
         const progressContainer = headerRow.createEl('div', { 
-            cls: 'agenda-hero-progress-container'
+            cls: 'agenda-hero-okr-progress-container'
         });
         
         const progressBar = progressContainer.createEl('div', { 
-            cls: 'agenda-hero-progress-bar'
+            cls: 'agenda-hero-okr-progress-bar'
         });
         progressBar.style.width = `${keyResult.progress}%`;
         
         progressContainer.createEl('span', { 
             text: `${keyResult.progress}%`,
-            cls: 'agenda-hero-progress-text'
+            cls: 'agenda-hero-okr-progress-text'
         });
         
         // Add buttons
         const buttonContainer = headerRow.createEl('div', { 
-            cls: 'agenda-hero-button-container'
+            cls: 'agenda-hero-okr-button-container'
         });
         
         const editButton = buttonContainer.createEl('button', { 
             text: 'Edit',
-            cls: 'agenda-hero-small-button'
+            cls: 'agenda-hero-okr-small-button'
         });
         editButton.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -269,7 +269,7 @@ export class OkrHierarchyView extends ItemView {
         // Add delete button for key results
         const deleteButton = buttonContainer.createEl('button', { 
             text: 'Delete',
-            cls: 'agenda-hero-small-button'
+            cls: 'agenda-hero-okr-small-button'
         });
         deleteButton.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -287,7 +287,7 @@ export class OkrHierarchyView extends ItemView {
         
         const addProjectButton = buttonContainer.createEl('button', { 
             text: 'Add Project',
-            cls: 'agenda-hero-small-button'
+            cls: 'agenda-hero-okr-small-button'
         });
         addProjectButton.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -296,27 +296,27 @@ export class OkrHierarchyView extends ItemView {
         
         // Create content container
         const krContent = krContainer.createEl('div', { 
-            cls: 'agenda-hero-kr-content'
+            cls: 'agenda-hero-okr-kr-content'
         });
         
         // Add description if present
         if (keyResult.description) {
             krContent.createEl('p', { 
                 text: keyResult.description,
-                cls: 'agenda-hero-description'
+                cls: 'agenda-hero-okr-description'
             });
         }
         
         // Add date range
         krContent.createEl('p', { 
             text: `${keyResult.startDate.toLocaleDateString()} - ${keyResult.endDate.toLocaleDateString()}`,
-            cls: 'agenda-hero-date-range'
+            cls: 'agenda-hero-okr-date-range'
         });
         
         // Add projects
         if (keyResult.projects && keyResult.projects.length > 0) {
             const projectsContainer = krContent.createEl('div', { 
-                cls: 'agenda-hero-projects-container'
+                cls: 'agenda-hero-okr-projects-container'
             });
             
             projectsContainer.createEl('h5', { text: 'Projects' });
@@ -327,7 +327,7 @@ export class OkrHierarchyView extends ItemView {
         } else {
             krContent.createEl('p', { 
                 text: 'No projects yet. Click "Add Project" to create one.',
-                cls: 'agenda-hero-empty-message'
+                cls: 'agenda-hero-okr-empty-message'
             });
         }
     }
@@ -335,17 +335,17 @@ export class OkrHierarchyView extends ItemView {
     renderProject(container: HTMLElement, project: Project) {
         // Create project container
         const projectContainer = container.createEl('div', { 
-            cls: 'agenda-hero-project-container' 
+            cls: 'agenda-hero-okr-project-container' 
         });
         
         // Create header row
         const headerRow = projectContainer.createEl('div', { 
-            cls: 'agenda-hero-project-header'
+            cls: 'agenda-hero-okr-project-header'
         });
         
         // Add expand/collapse button
         const expandButton = headerRow.createEl('span', { 
-            cls: 'agenda-hero-expand-button'
+            cls: 'agenda-hero-okr-expand-button'
         });
         expandButton.innerHTML = '▼';
         expandButton.addEventListener('click', () => {
@@ -358,38 +358,38 @@ export class OkrHierarchyView extends ItemView {
         // Add title
         headerRow.createEl('h5', { 
             text: project.title,
-            cls: 'agenda-hero-project-title'
+            cls: 'agenda-hero-okr-project-title'
         });
         
         // Add status badge
         headerRow.createEl('span', {
             text: getStatusDisplayText(project.status),
-            cls: `agenda-hero-status-badge agenda-hero-status-${project.status}`
+            cls: `agenda-hero-status-badge agenda-hero-okr-status-${project.status}`
         });
         
         // Add progress
         const progressContainer = headerRow.createEl('div', { 
-            cls: 'agenda-hero-progress-container'
+            cls: 'agenda-hero-okr-progress-container'
         });
         
         const progressBar = progressContainer.createEl('div', { 
-            cls: 'agenda-hero-progress-bar'
+            cls: 'agenda-hero-okr-progress-bar'
         });
         progressBar.style.width = `${project.progress}%`;
         
         progressContainer.createEl('span', { 
             text: `${project.progress}%`,
-            cls: 'agenda-hero-progress-text'
+            cls: 'agenda-hero-okr-progress-text'
         });
         
         // Add buttons
         const buttonContainer = headerRow.createEl('div', { 
-            cls: 'agenda-hero-button-container'
+            cls: 'agenda-hero-okr-button-container'
         });
         
         const editButton = buttonContainer.createEl('button', { 
             text: 'Edit',
-            cls: 'agenda-hero-small-button'
+            cls: 'agenda-hero-okr-small-button'
         });
         editButton.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -399,7 +399,7 @@ export class OkrHierarchyView extends ItemView {
         // Add delete button for projects
         const deleteButton = buttonContainer.createEl('button', { 
             text: 'Delete',
-            cls: 'agenda-hero-small-button'
+            cls: 'agenda-hero-okr-small-button'
         });
         deleteButton.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -417,7 +417,7 @@ export class OkrHierarchyView extends ItemView {
         
         const addTaskButton = buttonContainer.createEl('button', { 
             text: 'Add Task',
-            cls: 'agenda-hero-small-button'
+            cls: 'agenda-hero-okr-small-button'
         });
         addTaskButton.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -426,33 +426,33 @@ export class OkrHierarchyView extends ItemView {
         
         // Create content container
         const projectContent = projectContainer.createEl('div', { 
-            cls: 'agenda-hero-project-content'
+            cls: 'agenda-hero-okr-project-content'
         });
         
         // Add description if present
         if (project.description) {
             projectContent.createEl('p', { 
                 text: project.description,
-                cls: 'agenda-hero-description'
+                cls: 'agenda-hero-okr-description'
             });
         }
         
         // Add date range
         projectContent.createEl('p', { 
             text: `${project.startDate.toLocaleDateString()} - ${project.endDate.toLocaleDateString()}`,
-            cls: 'agenda-hero-date-range'
+            cls: 'agenda-hero-okr-date-range'
         });
         
         // Add tasks
         if (project.tasks && project.tasks.length > 0) {
             const tasksContainer = projectContent.createEl('div', { 
-                cls: 'agenda-hero-tasks-container'
+                cls: 'agenda-hero-okr-tasks-container'
             });
             
             tasksContainer.createEl('h6', { text: 'Tasks' });
             
             const taskList = tasksContainer.createEl('ul', {
-                cls: 'agenda-hero-task-list'
+                cls: 'agenda-hero-okr-task-list'
             });
             
             project.tasks.forEach(task => {
@@ -461,7 +461,7 @@ export class OkrHierarchyView extends ItemView {
         } else {
             projectContent.createEl('p', { 
                 text: 'No tasks yet. Click "Add Task" to create one.',
-                cls: 'agenda-hero-empty-message'
+                cls: 'agenda-hero-okr-empty-message'
             });
         }
     }
@@ -469,13 +469,13 @@ export class OkrHierarchyView extends ItemView {
     renderTask(container: HTMLElement, task: Task) {
         // Create task item
         const taskItem = container.createEl('li', { 
-            cls: 'agenda-hero-task-item' 
+            cls: 'agenda-hero-okr-task-item' 
         });
         
         // Add checkbox
         const checkbox = taskItem.createEl('input', {
             type: 'checkbox',
-            cls: 'agenda-hero-task-checkbox'
+            cls: 'agenda-hero-okr-task-checkbox'
         });
         checkbox.checked = task.completed;
         
@@ -486,31 +486,31 @@ export class OkrHierarchyView extends ItemView {
         
         // Add task content
         const contentContainer = taskItem.createEl('div', {
-            cls: 'agenda-hero-task-content-container'
+            cls: 'agenda-hero-okr-task-content-container'
         });
         
         // Add title
         const title = contentContainer.createEl('span', {
             text: task.title,
-            cls: task.completed ? 'agenda-hero-task-content completed' : 'agenda-hero-task-content'
+            cls: task.completed ? 'agenda-hero-okr-task-content completed' : 'agenda-hero-okr-task-content'
         });
         
         // Add due date if present
         if (task.dueDate) {
             contentContainer.createEl('div', {
                 text: `Due: ${task.dueDate.toLocaleDateString()}`,
-                cls: 'agenda-hero-task-due-date'
+                cls: 'agenda-hero-okr-task-due-date'
             });
         }
         
         // Add buttons
         const buttonContainer = taskItem.createEl('div', {
-            cls: 'agenda-hero-task-actions'
+            cls: 'agenda-hero-okr-task-actions'
         });
         
         const editButton = buttonContainer.createEl('button', {
             text: 'Edit',
-            cls: 'agenda-hero-small-button'
+            cls: 'agenda-hero-okr-small-button'
         });
         editButton.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -519,7 +519,7 @@ export class OkrHierarchyView extends ItemView {
         // Add delete button for tasks
         const deleteButton = buttonContainer.createEl('button', {
             text: 'Delete',
-            cls: 'agenda-hero-small-button'
+            cls: 'agenda-hero-okr-small-button'
         });
         deleteButton.addEventListener('click', (e) => {
             e.stopPropagation();

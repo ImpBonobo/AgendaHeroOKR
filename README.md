@@ -1,4 +1,4 @@
-OKR TaskManager for Obsidian
+Agenda Hero OKR is a OKR TaskManager for Obsidian
 OKR TaskManager is a comprehensive productivity plugin for Obsidian that combines strategic OKR (Objectives and Key Results) methodology with powerful task management and intelligent scheduling. The plugin transforms Obsidian into a complete planning and organization tool suitable for both corporate strategic planning and personal productivity management.
 Features
 OKR Hierarchy and Data Model

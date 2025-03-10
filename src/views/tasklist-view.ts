@@ -1,5 +1,5 @@
 import { WorkspaceLeaf, MarkdownView, Modal, App, Notice } from 'obsidian';
-import AgendaHeroPlugin, { Task } from '../../main';
+import AgendaHeroOKRPlugin, { Task } from '../../main';
 import * as dragulaModule from 'dragula';
 // @ts-ignore
 const dragula = dragulaModule.default || dragulaModule;
@@ -11,7 +11,7 @@ interface TaskPreviewOptions {
 }
 
 export class TaskListView extends MarkdownView {
-    plugin: AgendaHeroPlugin;
+    plugin: AgendaHeroOKRPlugin;
     container: HTMLElement;
     filterContainer: HTMLElement;
     taskListContainer: HTMLElement;
@@ -19,64 +19,64 @@ export class TaskListView extends MarkdownView {
     projectsCache: Set<string> = new Set();
     drake: any; // Dragula instance
 
-    constructor(leaf: WorkspaceLeaf, plugin: AgendaHeroPlugin) {
+    constructor(leaf: WorkspaceLeaf, plugin: AgendaHeroOKRPlugin) {
         super(leaf);
         this.plugin = plugin;
     }
 
     getViewType(): string {
-        return 'agenda-hero-tasklist';
+        return 'agenda-hero-okr-tasklist';
     }
 
     getDisplayText(): string {
-        return 'AgendaHero Task List';
+        return 'AgendaHero-okr Task List';
     }
 
     async onOpen() {
         // Create container for the task list
-        this.container = this.contentEl.createDiv({ cls: 'agenda-hero-tasklist-container' });
+        this.container = this.contentEl.createDiv({ cls: 'agenda-hero-okr-tasklist-container' });
         
         // Create header container
-        this.headerContainer = this.container.createDiv({ cls: 'agenda-hero-tasklist-header' });
+        this.headerContainer = this.container.createDiv({ cls: 'agenda-hero-okr-tasklist-header' });
         this.headerContainer.createEl('h3', { text: 'Tasks' });
         
         // Add view navigation
         const navContainer = this.headerContainer.createDiv({ 
-            cls: 'agenda-hero-view-navigation' 
+            cls: 'agenda-hero-okr-view-navigation' 
         });
 
         // Calendar View button
         const calendarButton = navContainer.createEl('button', {
             text: 'Calendar View',
-            cls: 'agenda-hero-view-button'
+            cls: 'agenda-hero-okr-view-button'
         });
         calendarButton.style.marginRight = '10px';
         calendarButton.addEventListener('click', () => {
-            this.plugin.activateView('agenda-hero-calendar');
+            this.plugin.activateView('agenda-hero-okr-calendar');
         });
 
         // Tasklist View button (current)
         const tasklistButton = navContainer.createEl('button', {
             text: 'Task List',
-            cls: 'agenda-hero-view-button active'
+            cls: 'agenda-hero-okr-view-button active'
         });
         tasklistButton.style.marginRight = '10px';
 
         // Scrumboard View button
         const scrumboardButton = navContainer.createEl('button', {
             text: 'Scrum Board',
-            cls: 'agenda-hero-view-button'
+            cls: 'agenda-hero-okr-view-button'
         });
         scrumboardButton.addEventListener('click', () => {
-            this.plugin.activateView('agenda-hero-scrumboard');
+            this.plugin.activateView('agenda-hero-okr-scrumboard');
         });
 
         // Buttons for different views
-        const viewButtons = this.headerContainer.createDiv({ cls: 'agenda-hero-view-buttons' });
+        const viewButtons = this.headerContainer.createDiv({ cls: 'agenda-hero-okr-view-buttons' });
         
         const allButton = viewButtons.createEl('button', { 
             text: 'All',
-            cls: 'agenda-hero-view-button active'
+            cls: 'agenda-hero-okr-view-button active'
         });
         allButton.addEventListener('click', () => {
             this.setActiveButton(allButton);
@@ -85,7 +85,7 @@ export class TaskListView extends MarkdownView {
         
         const todayButton = viewButtons.createEl('button', { 
             text: 'Today',
-            cls: 'agenda-hero-view-button'
+            cls: 'agenda-hero-okr-view-button'
         });
         todayButton.addEventListener('click', () => {
             this.setActiveButton(todayButton);
@@ -94,7 +94,7 @@ export class TaskListView extends MarkdownView {
         
         const upcomingButton = viewButtons.createEl('button', { 
             text: 'Upcoming',
-            cls: 'agenda-hero-view-button'
+            cls: 'agenda-hero-okr-view-button'
         });
         upcomingButton.addEventListener('click', () => {
             this.setActiveButton(upcomingButton);
@@ -102,11 +102,11 @@ export class TaskListView extends MarkdownView {
         });
         
         // Create filter container
-        this.filterContainer = this.container.createDiv({ cls: 'agenda-hero-filters' });
+        this.filterContainer = this.container.createDiv({ cls: 'agenda-hero-okr-filters' });
         this.createFilterUI();
         
         // Create container for task list
-        this.taskListContainer = this.container.createDiv({ cls: 'agenda-hero-tasks' });
+        this.taskListContainer = this.container.createDiv({ cls: 'agenda-hero-okr-tasks' });
         
         // Render tasks
         this.renderTasks();
@@ -117,7 +117,7 @@ export class TaskListView extends MarkdownView {
         // Event listener for task updates
         this.registerEvent(
             // @ts-ignore - Obsidian API allows custom events
-            this.app.workspace.on('agenda-hero:tasks-updated', () => {
+            this.app.workspace.on('agenda-hero-okr:tasks-updated', () => {
                 this.renderTasks();
                 this.updateProjectsCache();
             })
@@ -126,7 +126,7 @@ export class TaskListView extends MarkdownView {
     
     // Helper method to set active button
     setActiveButton(activeButton: HTMLElement) {
-        this.headerContainer.querySelectorAll('.agenda-hero-view-button').forEach(button => {
+        this.headerContainer.querySelectorAll('.agenda-hero-okr-view-button').forEach(button => {
             button.removeClass('active');
         });
         activeButton.addClass('active');
@@ -148,7 +148,7 @@ export class TaskListView extends MarkdownView {
         this.filterContainer.createEl('h3', { text: 'Filters' });
         
         // Status filter
-        const statusFilter = this.filterContainer.createDiv({ cls: 'agenda-hero-filter-group' });
+        const statusFilter = this.filterContainer.createDiv({ cls: 'agenda-hero-okr-filter-group' });
         statusFilter.createEl('label', { text: 'Status:' });
         
         const statusSelect = statusFilter.createEl('select');
@@ -161,7 +161,7 @@ export class TaskListView extends MarkdownView {
         });
         
         // Priority filter
-        const priorityFilter = this.filterContainer.createDiv({ cls: 'agenda-hero-filter-group' });
+        const priorityFilter = this.filterContainer.createDiv({ cls: 'agenda-hero-okr-filter-group' });
         priorityFilter.createEl('label', { text: 'Priority:' });
         
         const prioritySelect = priorityFilter.createEl('select');
@@ -176,7 +176,7 @@ export class TaskListView extends MarkdownView {
         });
         
         // Source filter (files/folders)
-        const sourceFilter = this.filterContainer.createDiv({ cls: 'agenda-hero-filter-group' });
+        const sourceFilter = this.filterContainer.createDiv({ cls: 'agenda-hero-okr-filter-group' });
         sourceFilter.createEl('label', { text: 'Source:' });
         
         const sourceSelect = sourceFilter.createEl('select');
@@ -190,7 +190,7 @@ export class TaskListView extends MarkdownView {
         });
         
         // Tag filter
-        const tagFilter = this.filterContainer.createDiv({ cls: 'agenda-hero-filter-group' });
+        const tagFilter = this.filterContainer.createDiv({ cls: 'agenda-hero-okr-filter-group' });
         tagFilter.createEl('label', { text: 'Tag:' });
         
         const tagSelect = tagFilter.createEl('select');
@@ -206,7 +206,7 @@ export class TaskListView extends MarkdownView {
         });
         
         // Search field
-        const searchFilter = this.filterContainer.createDiv({ cls: 'agenda-hero-filter-group' });
+        const searchFilter = this.filterContainer.createDiv({ cls: 'agenda-hero-okr-filter-group' });
         searchFilter.createEl('label', { text: 'Search:' });
         
         const searchInput = searchFilter.createEl('input', { type: 'text' });
@@ -230,7 +230,7 @@ export class TaskListView extends MarkdownView {
         const sourceFilter = sourceSelect ? sourceSelect.value : 'all';
         
         // Get tag filter
-        const tagSelect = this.filterContainer.querySelector('.agenda-hero-filter-group:nth-child(4) select') as HTMLSelectElement;
+        const tagSelect = this.filterContainer.querySelector('.agenda-hero-okr-filter-group:nth-child(4) select') as HTMLSelectElement;
         const tagFilter = tagSelect ? tagSelect.value : 'all';
         
         // Get search filter
@@ -307,7 +307,7 @@ export class TaskListView extends MarkdownView {
         }
         
         // Create task list
-        const taskList = this.taskListContainer.createEl('ul', { cls: 'agenda-hero-task-list' });
+        const taskList = this.taskListContainer.createEl('ul', { cls: 'agenda-hero-okr-task-list' });
         
         // Collect projects (source files) for filtering
         const projects = new Set<string>();
@@ -321,7 +321,7 @@ export class TaskListView extends MarkdownView {
             }
             
             // Create task item
-            const taskItem = taskList.createEl('li', { cls: 'agenda-hero-task-item' });
+            const taskItem = taskList.createEl('li', { cls: 'agenda-hero-okr-task-item' });
             
             // Add task ID as attribute for drag & drop
             taskItem.setAttribute('data-task-id', task.id);
@@ -363,7 +363,7 @@ export class TaskListView extends MarkdownView {
         // Checkbox for status
         const checkbox = container.createEl('input', { 
             type: 'checkbox',
-            cls: 'agenda-hero-task-checkbox'
+            cls: 'agenda-hero-okr-task-checkbox'
         });
         checkbox.checked = task.completed;
         
@@ -375,21 +375,21 @@ export class TaskListView extends MarkdownView {
         // Priority indicator
         const priorityColors = ['#ff5252', '#ff9800', '#4caf50', '#2196f3'];
         const priorityIndicator = container.createEl('span', { 
-            cls: 'agenda-hero-priority',
+            cls: 'agenda-hero-okr-priority',
             attr: { style: `background-color: ${priorityColors[task.priority - 1]};` }
         });
         
         // Task content
-        const contentContainer = container.createEl('div', { cls: 'agenda-hero-task-content-container' });
+        const contentContainer = container.createEl('div', { cls: 'agenda-hero-okr-task-content-container' });
         
         // Task title
         const content = contentContainer.createEl('span', { 
             text: task.content,
-            cls: 'agenda-hero-task-content'
+            cls: 'agenda-hero-okr-task-content'
         });
         
         if (task.completed) {
-            content.addClass('agenda-hero-completed');
+            content.addClass('agenda-hero-okr-completed');
         }
         
         // Detailed view
@@ -399,7 +399,7 @@ export class TaskListView extends MarkdownView {
             if (project) {
                 contentContainer.createEl('div', {
                     text: `Project: ${project}`,
-                    cls: 'agenda-hero-task-project'
+                    cls: 'agenda-hero-okr-task-project'
                 });
             }
             
@@ -407,7 +407,7 @@ export class TaskListView extends MarkdownView {
             if (task.dueDate) {
                 contentContainer.createEl('div', {
                     text: `Due: ${task.dueDate.toLocaleString()}`,
-                    cls: 'agenda-hero-task-due-date'
+                    cls: 'agenda-hero-okr-task-due-date'
                 });
             }
             
@@ -415,27 +415,27 @@ export class TaskListView extends MarkdownView {
             const priorityTexts = ['High', 'Medium', 'Normal', 'Low'];
             contentContainer.createEl('div', {
                 text: `Priority: ${priorityTexts[task.priority - 1]}`,
-                cls: 'agenda-hero-task-priority-text'
+                cls: 'agenda-hero-okr-task-priority-text'
             });
             
             // Recurring?
             if (task.recurring) {
                 contentContainer.createEl('div', {
                     text: `Recurring: ${task.recurrenceRule || 'Yes'}`,
-                    cls: 'agenda-hero-task-recurring'
+                    cls: 'agenda-hero-okr-task-recurring'
                 });
             }
             
             // Extract and display tags
             const tags = this.extractTags(task.content);
             if (tags.length > 0) {
-                const tagsContainer = contentContainer.createEl('div', { cls: 'agenda-hero-task-tags' });
+                const tagsContainer = contentContainer.createEl('div', { cls: 'agenda-hero-okr-task-tags' });
                 tagsContainer.createEl('span', { text: 'Tags: ' });
                 
                 tags.forEach((tag, index) => {
                     tagsContainer.createEl('span', {
                         text: tag,
-                        cls: 'agenda-hero-task-tag'
+                        cls: 'agenda-hero-okr-task-tag'
                     });
                     
                     if (index < tags.length - 1) {
@@ -448,14 +448,14 @@ export class TaskListView extends MarkdownView {
             if (task.dueDate) {
                 const dueDate = contentContainer.createEl('span', {
                     text: task.dueDate.toLocaleDateString(),
-                    cls: 'agenda-hero-due-date'
+                    cls: 'agenda-hero-okr-due-date'
                 });
             }
         }
         
         // Action buttons
         if (options.showActions) {
-            const actions = container.createEl('div', { cls: 'agenda-hero-task-actions' });
+            const actions = container.createEl('div', { cls: 'agenda-hero-okr-task-actions' });
             
             if (options.showDetails) {
                 // Edit button
@@ -545,7 +545,7 @@ export class TaskListView extends MarkdownView {
      */
     updateProjectFilter(projects: string[]) {
         // Find source filter
-        const sourceFilter = this.filterContainer.querySelector('.agenda-hero-filter-group:nth-child(3)');
+        const sourceFilter = this.filterContainer.querySelector('.agenda-hero-okr-filter-group:nth-child(3)');
         if (!sourceFilter) return;
         
         // Find select element
@@ -582,7 +582,7 @@ export class TaskListView extends MarkdownView {
         this.drake = dragula([this.taskListContainer], {
             moves: (el: HTMLElement, container: HTMLElement, handle: HTMLElement) => {
                 // Only task items can be moved
-                return el.classList.contains('agenda-hero-task-item');
+                return el.classList.contains('agenda-hero-okr-task-item');
             },
             copy: true, // Create a copy, so the original stays in the list
             accepts: (el: HTMLElement, target: HTMLElement, source: HTMLElement, sibling: HTMLElement) => {
@@ -602,19 +602,19 @@ export class TaskListView extends MarkdownView {
             if (!task) return;
             
             // Add class to indicate a task is being dragged
-            document.body.classList.add('agenda-hero-dragging-task');
+            document.body.classList.add('agenda-hero-okr-dragging-task');
             
             // Trigger event to notify calendar
-            this.app.workspace.trigger('agenda-hero:task-drag-start', { taskId, task });
+            this.app.workspace.trigger('agenda-hero-okr:task-drag-start', { taskId, task });
         });
         
         // Event handler for drag end
         this.drake.on('dragend', (el: HTMLElement) => {
             // Remove class
-            document.body.classList.remove('agenda-hero-dragging-task');
+            document.body.classList.remove('agenda-hero-okr-dragging-task');
             
             // Trigger event to notify calendar
-            this.app.workspace.trigger('agenda-hero:task-drag-end');
+            this.app.workspace.trigger('agenda-hero-okr:task-drag-end');
         });
         
         // Event handler for dropping tasks
@@ -631,16 +631,16 @@ export class TaskListView extends MarkdownView {
             if (!task) return;
             
             // Trigger event to notify calendar
-            this.app.workspace.trigger('agenda-hero:task-dropped', { taskId, task, target });
+            this.app.workspace.trigger('agenda-hero-okr:task-dropped', { taskId, task, target });
         });
         
         // Event handler for cancel
         this.drake.on('cancel', () => {
             // Remove class
-            document.body.classList.remove('agenda-hero-dragging-task');
+            document.body.classList.remove('agenda-hero-okr-dragging-task');
             
             // Trigger event to notify calendar
-            this.app.workspace.trigger('agenda-hero:task-drag-cancel');
+            this.app.workspace.trigger('agenda-hero-okr:task-drag-cancel');
         });
     }
 
@@ -691,7 +691,7 @@ export class TaskListView extends MarkdownView {
 class TaskEditModal extends Modal {
     task: Task;
     onSubmit: (task: Task) => void;
-    plugin: AgendaHeroPlugin;
+    plugin: AgendaHeroOKRPlugin;
     
     constructor(app: App, task: Task, onSubmit: (task: Task) => void) {
         super(app);
@@ -700,7 +700,7 @@ class TaskEditModal extends Modal {
         
         // Get plugin instance from app
         // @ts-ignore - We know the plugin exists
-        this.plugin = app.plugins.plugins['agenda-hero'];
+        this.plugin = app.plugins.plugins['agenda-hero-okr'];
     }
     
     onOpen() {
@@ -710,7 +710,7 @@ class TaskEditModal extends Modal {
         contentEl.createEl('h2', {text: 'Edit Task'});
         
         // Create form
-        const form = contentEl.createEl('form', { cls: 'agenda-hero-edit-form' });
+        const form = contentEl.createEl('form', { cls: 'agenda-hero-okr-edit-form' });
         
         // Description
         const descriptionGroup = form.createDiv({ cls: 'form-group' });

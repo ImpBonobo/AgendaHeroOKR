@@ -4,7 +4,7 @@ import { DateInput, EventInput } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import AgendaHeroPlugin from '../../main';
+import AgendaHeroOKRPlugin from '../../main';
 import { Task } from '../../main';
 import { OkrStatus } from '../models/okr-models';
 import { OkrService } from '../services/okr-service';
@@ -15,11 +15,11 @@ import { TimeBlockModal } from '../components/time-block-modal';
 
 
 export class CalendarView extends ItemView {
-    plugin: AgendaHeroPlugin;
+    plugin: AgendaHeroOKRPlugin;
     calendar: Calendar;
     okrService: OkrService;
 
-    constructor(leaf: WorkspaceLeaf, plugin: AgendaHeroPlugin) {
+    constructor(leaf: WorkspaceLeaf, plugin: AgendaHeroOKRPlugin) {
         super(leaf);
         this.plugin = plugin;
         
@@ -72,11 +72,11 @@ export class CalendarView extends ItemView {
     }
 
     getViewType(): string {
-        return 'agenda-hero-calendar';
+        return 'agenda-hero-okr-calendar';
     }
 
     getDisplayText(): string {
-        return 'AgendaHero Calendar';
+        return 'AgendaHeroOKR Calendar';
     }
 
     async onOpen() {
@@ -84,12 +84,12 @@ export class CalendarView extends ItemView {
         this.containerEl.empty();
         
         // Add header
-        const header = this.containerEl.createEl('h2', { text: 'AgendaHero Calendar' });
+        const header = this.containerEl.createEl('h2', { text: 'AgendaHeroOKR Calendar' });
         header.style.margin = '10px 20px';
         
         // Add scheduling controls
     const controlsContainer = this.containerEl.createDiv({ 
-        cls: 'agenda-hero-scheduling-controls' 
+        cls: 'agenda-hero-okr-scheduling-controls' 
 
     
 
@@ -100,7 +100,7 @@ export class CalendarView extends ItemView {
     // Reschedule All button
     const rescheduleButton = controlsContainer.createEl('button', {
         text: 'Reschedule All Tasks',
-        cls: 'agenda-hero-scheduling-button'
+        cls: 'agenda-hero-okr-scheduling-button'
     });
     rescheduleButton.addEventListener('click', () => {
         this.rescheduleAllTasks();
@@ -109,7 +109,7 @@ export class CalendarView extends ItemView {
     // Toggle Auto-scheduling button
     const autoScheduleButton = controlsContainer.createEl('button', {
         text: 'Toggle Auto-Scheduling',
-        cls: 'agenda-hero-scheduling-button'
+        cls: 'agenda-hero-okr-scheduling-button'
     });
     autoScheduleButton.addEventListener('click', () => {
         this.toggleAutoScheduling();
@@ -118,7 +118,7 @@ export class CalendarView extends ItemView {
     // Resolve Conflicts button
     const resolveConflictsButton = controlsContainer.createEl('button', {
         text: 'Resolve Conflicts',
-        cls: 'agenda-hero-scheduling-button'
+        cls: 'agenda-hero-okr-scheduling-button'
     });
     resolveConflictsButton.addEventListener('click', () => {
         this.resolveSchedulingConflicts();
@@ -126,34 +126,34 @@ export class CalendarView extends ItemView {
 
     // Add view navigation
     const navContainer = this.containerEl.createDiv({ 
-        cls: 'agenda-hero-view-navigation' 
+        cls: 'agenda-hero-okr-view-navigation' 
     });
     navContainer.style.margin = '10px 20px';
 
     // Calendar View button (current)
     const calendarButton = navContainer.createEl('button', {
         text: 'Calendar View',
-        cls: 'agenda-hero-view-button active'
+        cls: 'agenda-hero-okr-view-button active'
     });
     calendarButton.style.marginRight = '10px';
 
     // Tasklist View button
     const tasklistButton = navContainer.createEl('button', {
         text: 'Task List',
-        cls: 'agenda-hero-view-button'
+        cls: 'agenda-hero-okr-view-button'
     });
     tasklistButton.style.marginRight = '10px';
     tasklistButton.addEventListener('click', () => {
-        this.plugin.activateView('agenda-hero-tasklist');
+        this.plugin.activateView('agenda-hero-okr-tasklist');
     });
 
     // Scrumboard View button
     const scrumboardButton = navContainer.createEl('button', {
         text: 'Scrum Board',
-        cls: 'agenda-hero-view-button'
+        cls: 'agenda-hero-okr-view-button'
     });
     scrumboardButton.addEventListener('click', () => {
-        this.plugin.activateView('agenda-hero-scrumboard');
+        this.plugin.activateView('agenda-hero-okr-scrumboard');
     });
 
         // Display status text
@@ -367,36 +367,36 @@ export class CalendarView extends ItemView {
             // Event listener for task drag start
             this.registerEvent(
                 // @ts-ignore - Obsidian API allows custom events
-                this.app.workspace.on('agenda-hero:task-drag-start', (data: any) => {
+                this.app.workspace.on('agenda-hero-okr:task-drag-start', (data: any) => {
                     // Highlight calendar container
-                    calendarContainer.addClass('agenda-hero-calendar-drop-target');
+                    calendarContainer.addClass('agenda-hero-okr-calendar-drop-target');
                 })
             );
             
             // Event listener for task drag end
             this.registerEvent(
                 // @ts-ignore - Obsidian API allows custom events
-                this.app.workspace.on('agenda-hero:task-drag-end', () => {
+                this.app.workspace.on('agenda-hero-okr:task-drag-end', () => {
                     // Remove highlight
-                    calendarContainer.removeClass('agenda-hero-calendar-drop-target');
+                    calendarContainer.removeClass('agenda-hero-okr-calendar-drop-target');
                 })
             );
             
             // Event listener for task drag cancel
             this.registerEvent(
                 // @ts-ignore - Obsidian API allows custom events
-                this.app.workspace.on('agenda-hero:task-drag-cancel', () => {
+                this.app.workspace.on('agenda-hero-okr:task-drag-cancel', () => {
                     // Remove highlight
-                    calendarContainer.removeClass('agenda-hero-calendar-drop-target');
+                    calendarContainer.removeClass('agenda-hero-okr-calendar-drop-target');
                 })
             );
             
             // Event listener for task dropped
             this.registerEvent(
                 // @ts-ignore - Obsidian API allows custom events
-                this.app.workspace.on('agenda-hero:task-dropped', (data: any) => {
+                this.app.workspace.on('agenda-hero-okr:task-dropped', (data: any) => {
                     // Remove highlight
-                    calendarContainer.removeClass('agenda-hero-calendar-drop-target');
+                    calendarContainer.removeClass('agenda-hero-okr-calendar-drop-target');
                     
                     // Check if task was dropped in the calendar
                     if (calendarContainer.contains(data.target)) {
@@ -797,7 +797,7 @@ export class CalendarView extends ItemView {
             document.addEventListener('mouseup', handleMouseUp);
             
             // Add a class to the body to indicate that a drag is in progress
-            document.body.classList.add('agenda-hero-dragging');
+            document.body.classList.add('agenda-hero-okr-dragging');
         });
         
         // Mousemove handler
@@ -814,7 +814,7 @@ export class CalendarView extends ItemView {
         // Mouseup handler
         const handleMouseUp = (e: MouseEvent) => {
             // Remove drag class
-            document.body.classList.remove('agenda-hero-dragging');
+            document.body.classList.remove('agenda-hero-okr-dragging');
             
             // Remove event listeners
             document.removeEventListener('mousemove', handleMouseMove);
@@ -1396,7 +1396,7 @@ export class CalendarView extends ItemView {
         if (content) {
             // Create tooltip element
             this.tooltipEl = document.createElement('div');
-            this.tooltipEl.className = 'agenda-hero-scheduling-tooltip';
+            this.tooltipEl.className = 'agenda-hero-okr-scheduling-tooltip';
             this.tooltipEl.innerHTML = content;
             
             // Position tooltip

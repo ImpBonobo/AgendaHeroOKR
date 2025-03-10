@@ -1,7 +1,7 @@
 {
-	"name": "agenda-hero",
+	"name": "agenda-hero-okr",
 	"version": "1.0.0",
-	"description": "Ein Obsidian-Plugin für Kalender- und Agenda-Ansichten mit Task-Aggregation",
+	"description": "A obsidian-plugin for calendar- und agenda-views with task-aggregation",
 	"main": "main.js",
 	"scripts": {
 	  "dev": "node esbuild.config.mjs",
@@ -13,7 +13,8 @@
 	  "plugin",
 	  "calendar",
 	  "tasks",
-	  "agenda"
+	  "agenda",
+	  "okr"
 	],
 	"author": "Adrian Coman",
 	"license": "MIT",
