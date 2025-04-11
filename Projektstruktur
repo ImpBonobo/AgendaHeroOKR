@@ -1,0 +1,162 @@
+Analyse der aktuellen Projektstruktur und Verbesserungsvorschläge
+Nach Analyse eurer Projektstruktur sehe ich ein gut organisiertes, professionelles Setup für ein Obsidian OKR-Plugin mit einem guten Modularisierungsgrad. Die Aufteilung der Persistence-Services, die wir gerade implementiert haben, war definitiv ein wichtiger Schritt in die richtige Richtung.
+Verbesserungsvorschläge für die bestehende Struktur
+
+Konsistente Namenskonventionen:
+
+Es gibt eine Mischung aus kebab-case (task-list-view) und anderen Konventionen bei Dateinamen.
+Empfehlung: Konsequentes kebab-case für Ordner und Dateien im gesamten Projekt.
+
+
+Zusätzliche Strukturkomponenten:
+
+Ein core-Ordner für zentrale, wiederverwendbare Funktionalitäten
+Ein constants-Ordner für globale Konstanten (Status, Fehlermeldungen, Konfigurationen)
+
+
+Test-Infrastruktur:
+
+Einführung eines geeigneten Test-Frameworks mit einer klaren Struktur
+
+
+Weiteres Aufbrechen großer Dateien:
+
+Ähnlich wie bei der Persistence-Schicht könnten andere große Module aufgeteilt werden
+
+
+
+Vorgeschlagene optimierte Projektstruktur
+
+agenda-hero-okr/
+├── .git/
+├── .github/                           # CI/CD-Konfigurationen, GitHub Actions
+├── node_modules/                      # Externe Abhängigkeiten
+├── public/                            # Öffentliche Assets
+├── dist/                              # Build-Output-Verzeichnis (kompilierte Dateien)
+├── docs/                              # Projektdokumentation (NEU)
+│   ├── architecture.md                # Architektur-Überblick
+│   ├── api-references.md              # API-Dokumentation
+│   └── contributing.md                # Beitragsrichtlinien
+├── src/                               # Quellcode-Hauptordner
+│   ├── main.ts                        # Haupteinstiegspunkt
+│   ├── constants/                     # Globale Konstanten (NEU)
+│   │   ├── status-codes.ts            # Status-Codes für OKR-Elemente
+│   │   ├── error-messages.ts          # Standardisierte Fehlermeldungen
+│   │   └── defaults.ts                # Standardwerte und -konfigurationen
+│   ├── core/                          # Kernfunktionalitäten (NEU)
+│   │   ├── event-bus.ts               # Zentraler Event-Bus für Kommunikation
+│   │   ├── logger.ts                  # Zentrales Logging-System
+│   │   └── app-state.ts               # Zentraler Anwendungszustand
+│   ├── models/                        # Datenmodelle
+│   │   ├── base-models.ts
+│   │   ├── interfaces.ts              
+│   │   ├── okr-models.ts              # OKR-spezifische Modelle
+│   │   ├── key-result-models.ts
+│   │   ├── objective-models.ts
+│   │   ├── project-models.ts
+│   │   ├── sprint-models.ts
+│   │   ├── task-models.ts
+│   │   └── time-block-models.ts
+│   ├── components/                    # Wiederverwendbare UI-Komponenten
+│   │   ├── base-modal.ts
+│   │   ├── objective-modal.ts
+│   │   ├── key-result-modal.ts
+│   │   ├── project-modal.ts
+│   │   ├── task-modal.ts
+│   │   ├── time-block-modal.ts
+│   │   └── okr-modals.ts
+│   ├── services/                      # Business-Logik-Services
+│   │   ├── index-services.ts          # Re-export aller Services
+│   │   ├── okr-service.ts             # Hauptservice
+│   │   ├── okr-data-manager.ts        # Verwaltung der In-Memory-Daten
+│   │   ├── okr-relationship-manager.ts # Beziehungsverwaltung
+│   │   ├── okr-operations-service.ts  # CRUD-Operationen für OKR-Komponenten
+│   │   ├── task-operations-service.ts # CRUD-Operationen für Tasks
+│   │   ├── file-watcher-service.ts    # Überwachung von Dateiänderungen
+│   │   ├── time-block-manager.ts      # Zeitblock-Verwaltung
+│   │   ├── okr-persistence-service.ts # Facade für Persistence-Manager
+│   │   └── persistence/               # Persistence-Manager
+│   │       ├── persistence-config.ts
+│   │       ├── file-system-helper.ts
+│   │       ├── markdown-parser.ts
+│   │       ├── objective-persistence-manager.ts
+│   │       ├── key-result-persistence-manager.ts
+│   │       ├── project-persistence-manager.ts
+│   │       ├── sprint-persistence-manager.ts
+│   │       └── task-persistence-manager.ts
+│   ├── utils/                         # Hilfsfunktionen
+│   │   ├── anthropic-integration/     # Integration mit Anthropic API
+│   │   ├── scheduler-rules.ts         # Regeln für Aufgabenplanung
+│   │   ├── time-manager.ts            # Zeitmanagement-Logik
+│   │   ├── date-utils.ts              # Datumsbezogene Hilfsfunktionen (NEU)
+│   │   ├── string-utils.ts            # String-Manipulation (NEU)
+│   │   └── validation.ts              # Eingabevalidierung (NEU)
+│   ├── views/                         # UI-Ansichten
+│   │   ├── index-views.ts
+│   │   ├── calendar-view/
+│   │   ├── task-list-view/
+│   │   ├── scrum-board-view/
+│   │   ├── okr-hierarchy-view/
+│   │   └── test-view/
+│   ├── settings/                      # Einstellungen und Konfiguration
+│   │   ├── settings-tab.ts            # Einstellungs-Tab
+│   │   └── settings-models.ts         # Datenmodelle für Einstellungen
+│   ├── styles/                        # CSS-Stile
+│   │   └── themes/                    # UI-Themes
+│   └── types/                         # TypeScript-Typdefinitionen
+│       └── global.d.ts                # Globale Typdeklarationen
+├── tests/                             # Testdateien (NEU)
+│   ├── unit/                          # Unit-Tests
+│   │   ├── services/
+│   │   ├── utils/
+│   │   └── models/
+│   └── integration/                   # Integrationstests
+├── .gitattributes                     # Git-Konfigurationen
+├── .gitignore                         # Ignorierte Dateien
+├── esbuild.config.mjs                 # Build-Konfiguration
+├── jest.config.js                     # Test-Konfiguration (NEU)
+├── LICENSE                            # Lizenzinformationen
+├── manifest.json                      # Plugin-Metadaten
+├── package.json                       # NPM-Projektdefinition
+├── package-lock.json                  # Exakte Abhängigkeiten
+├── README.md                          # Projektdokumentation
+├── tsconfig.json                      # TypeScript-Konfiguration
+└── version-bump.mjs                   # Versionierungsskript
+Wichtigste Neuerungen
+
+Neue Ordner:
+
+docs/ - Für umfangreiche Projektdokumentation
+constants/ - Für zentrale Konstanten
+core/ - Für kernfunktionalitäten und App-State
+tests/ - Strukturierte Testorganisation
+
+
+Neue Utilitydateien:
+
+utils/date-utils.ts
+utils/string-utils.ts
+utils/validation.ts
+
+
+Zentrale Kommunikation:
+
+core/event-bus.ts für komponentenübergreifende Kommunikation
+core/app-state.ts für zentrales State-Management
+
+
+Test-Infrastruktur:
+
+Jest-Konfiguration zur Implementierung automatisierter Tests
+
+
+Verbesserte Dokumentation:
+
+Architekturüberblick und API-Referenzen
+
+
+
+Diese Struktur behält die Stärken eurer bestehenden Organisation bei, fügt aber wichtige Elemente für bessere Wartbarkeit, Skalierbarkeit und Entwicklererfahrung hinzu. Die neuen Komponenten unterstützen ein weiter wachsendes Projekt und erleichtern die Einarbeitung neuer Teammitglieder.
+
+
+Das sind viele änderungen auf einmal, lass uns schritt für schritt alles ändern und anpassen, dafür musst du mir exakt sagen was wo rein soll und versuche nicht vermutungen anzustellen, sondern frage mich einfach nach den infos die du brauchst.

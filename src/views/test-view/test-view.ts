@@ -1,5 +1,5 @@
 import { ItemView, WorkspaceLeaf } from 'obsidian';
-import AgendaHeroOKRPlugin from '../../main';
+import AgendaHeroOKRPlugin from '../../../main';
 
 export class TestView extends ItemView {
     plugin: AgendaHeroOKRPlugin;

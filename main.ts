@@ -1,14 +1,14 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, WorkspaceLeaf } from 'obsidian';
-import { CalendarView } from 'src/views/calendar-view';
-import { TaskListView } from 'src/views/tasklist-view';
-import { ScrumBoardView } from 'src/views/scrumboard-view';
-import { TestView } from './src/views/test-view';
+import { CalendarView } from 'src/views/calendar-view/calendar-view';
+import { TaskListView } from 'src/views/task-list-view/task-list-view';
+import { ScrumBoardView } from './src/views/scrum-board-view/scrum-board-view';
+import { TestView } from './src/views/test-view/test-view';
 import { OkrService } from './src/services/okr-service';
 import { TimeWindow } from './src/models/okr-models';
-import { OkrHierarchyView } from './src/views/okr-hierarchy-view';
+import { OkrHierarchyView } from './src/views/okr-hierarchy-view/okr-hierarchy-view';
 import * as path from 'path';
 
-
+ 
 // Import the Anthropic Batch API
 const { sendBatchRequests } = require('./src/utils/anthropic-batch');
 
