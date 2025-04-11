@@ -13,11 +13,6 @@ export class OkrHierarchyView extends ItemView {
     private hierarchyRenderer: OkrHierarchyRenderer;
     private okrOperations: OkrHierarchyOperations;
     
-    /**
-     * Constructor
-     * @param leaf Obsidian workspace leaf
-     * @param plugin Plugin instance
-     */
     constructor(leaf: WorkspaceLeaf, plugin: AgendaHeroOKRPlugin) {
         super(leaf);
         this.plugin = plugin;
@@ -28,50 +23,65 @@ export class OkrHierarchyView extends ItemView {
         this.hierarchyRenderer = new OkrHierarchyRenderer(this.app, this.okrService, this.okrOperations);
     }
 
-    /**
-     * Get view type
-     * @returns View type string
-     */
     getViewType(): string {
         return 'agenda-hero-okr-hierarchy';
     }
 
-    /**
-     * Get display text
-     * @returns Display text for the view
-     */
     getDisplayText(): string {
         return 'OKR Hierarchy';
     }
 
-    /**
-     * Handle view open event
-     */
     async onOpen() {
-        // Create container
-        const container = this.containerEl.createDiv({ cls: 'okr-hierarchy-container' });
+        const containerEl = this.containerEl;
         
-        // Create header
-        const header = container.createEl('div', { cls: 'okr-hierarchy-header' });
+        // Leere zuerst den Container, um sicherzustellen, dass keine alten Elemente verbleiben
+        containerEl.empty();
+        
+        // Erstelle den Hauptcontainer
+        const container = containerEl.createDiv({ cls: 'agenda-hero-okr-hierarchy-container' });
+        
+        // Erstelle Header
+        const header = container.createEl('div', { cls: 'agenda-hero-okr-header' });
         header.createEl('h2', { text: 'OKR Hierarchy' });
         
-        // Create buttons
+        // Erstelle Button-Container
         const buttonContainer = header.createEl('div', { cls: 'agenda-hero-okr-buttons' });
         
+        // Füge "New Objective" Button hinzu
         const newObjectiveButton = buttonContainer.createEl('button', { 
             text: 'New Objective',
             cls: 'agenda-hero-okr-button'
         });
-        newObjectiveButton.addEventListener('click', () => this.okrOperations.createNewObjective());
         
-        // Create hierarchy container
+        newObjectiveButton.addEventListener('click', () => {
+            console.log("Creating new objective...");
+            this.okrOperations.createNewObjective();
+        });
+        
+        // Erstelle Container für die OKR-Hierarchie
         const hierarchyContainer = container.createEl('div', { cls: 'agenda-hero-okr-hierarchy' });
         
-        // Render hierarchy
-        await this.hierarchyRenderer.renderHierarchy(hierarchyContainer);
+        // Debug-Ausgabe hinzufügen
+        console.log("OKR Service:", this.okrService);
+        console.log("About to render hierarchy...");
+        
+        try {
+            // Render hierarchy
+            await this.hierarchyRenderer.renderHierarchy(hierarchyContainer);
+            console.log("Hierarchy rendered successfully!");
+        } catch (error) {
+            console.error("Error rendering hierarchy:", error);
+            
+            // Zeige Fehlermeldung im UI
+            const errorEl = hierarchyContainer.createEl('div', { 
+                cls: 'agenda-okr-hero-error',
+                text: 'Error loading OKR data. Please check the console for details.'
+            });
+        }
         
         // Register for updates
         this.okrService.registerUpdateCallback(() => {
+            console.log("Update callback triggered!");
             this.hierarchyRenderer.renderHierarchy(hierarchyContainer);
         });
     }

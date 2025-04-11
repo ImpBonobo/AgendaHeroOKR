@@ -11,6 +11,7 @@ import { OkrDataManager } from './okr-data-manager';
 import { OkrPersistenceService } from './okr-persistence-service';
 import { OkrRelationshipManager } from './okr-relationship-manager';
 import { TimeBlockManager } from './time-block-manager';
+import { TimeBlockInfo } from '../utils/time-manager';
 
 /**
  * Handles CRUD operations for Tasks and task-related functionalities
@@ -136,11 +137,12 @@ export class TaskOperationsService {
     /**
      * Schedule a task using the time block manager
      * @param task The task to schedule
-     * @returns Result of the scheduling operation
+     * @returns Result object with success status and scheduled time blocks
      */
-    scheduleTask(task: Task): boolean {
+    scheduleTask(task: Task): { success: boolean, timeBlocks: TimeBlockInfo[] } {
+        // Check if task has required scheduling properties
         if (!task.estimatedDuration || !task.dueDate) {
-            return false;
+            return { success: false, timeBlocks: [] };
         }
         
         // Schedule the task
@@ -149,10 +151,10 @@ export class TaskOperationsService {
         // If blocks were created, add them to the data manager
         if (blocks.length > 0) {
             this.dataManager.addTimeBlocks(blocks);
-            return true;
+            return { success: true, timeBlocks: blocks };
         }
         
-        return false;
+        return { success: false, timeBlocks: [] };
     }
     
     /**

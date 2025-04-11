@@ -1,4 +1,4 @@
-import { moment } from 'obsidian';
+import moment from "moment";
 
 /**
  * Format a date for display
@@ -7,7 +7,7 @@ import { moment } from 'obsidian';
  * @returns Formatted date string
  */
 export function formatDate(date: Date, format: string = 'YYYY-MM-DD'): string {
-    return moment(date).format(format);
+    return moment(date).format(format); // moment is a function that returns an object with format method
 }
 
 /**

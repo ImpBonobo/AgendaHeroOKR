@@ -24,31 +24,31 @@
 }
 
 /* FullCalendar Anpassungen */
-.fc {
+.agenda-hero-okr-calendar-container .fc {
     height: 100%;
     font-family: var(--font-text);
 }
 
-.fc-toolbar-title {
+.agenda-hero-okr-calendar-container .fc-toolbar-title {
     font-size: 1.2em;
     font-weight: 600;
 }
 
-.fc-header-toolbar {
+.agenda-hero-okr-calendar-container .fc-header-toolbar {
     margin-bottom: 0.5em;
     padding: 0.5em;
 }
 
-.fc-col-header-cell {
+.agenda-hero-okr-calendar-container .fc-col-header-cell {
     background-color: var(--background-secondary);
     font-weight: 600;
 }
 
-.fc-day-today {
+.agenda-hero-okr-calendar-container .fc-day-today {
     background-color: rgba(255, 220, 40, 0.15) !important;
 }
 
-.fc-event {
+.agenda-hero-okr-calendar-container .fc-event {
     border-radius: 4px !important;
     padding: 2px 6px !important;
     margin: 1px 2px !important;
@@ -58,44 +58,44 @@
     user-select: none;
 }
 
-.fc-event:hover {
+.agenda-hero-okr-calendar-container .fc-event:hover {
     opacity: 0.9;
     transform: translateY(-2px);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.fc-event:active {
+.agenda-hero-okr-calendar-container .fc-event:active {
     cursor: grabbing;
 }
 
-.completed-task {
+.agenda-hero-okr-calendar-container .completed-task {
     text-decoration: line-through !important;
     opacity: 0.7 !important;
 }
 
 /* Prioritätsfarben (optional) */
-.priority-1 {
+.agenda-hero-okr-calendar-container .priority-1 {
     background-color: #ff5252 !important;
     border-color: #ff5252 !important;
 }
 
-.priority-2 {
+.agenda-hero-okr-calendar-container .priority-2 {
     background-color: #ff9800 !important;
     border-color: #ff9800 !important;
 }
 
-.priority-3 {
+.agenda-hero-okr-calendar-container .priority-3 {
     background-color: #4caf50 !important;
     border-color: #4caf50 !important;
 }
 
-.priority-4 {
+.agenda-hero-okr-calendar-container .priority-4 {
     background-color: #2196f3 !important;
     border-color: #2196f3 !important;
 }
 
 /* Verbesserte Drag & Drop-Styles */
-.drag-target-highlight {
+.agenda-hero-okr-calendar-container .drag-target-highlight {
     background-color: rgba(66, 135, 245, 0.2) !important;
     box-shadow: inset 0 0 0 2px #4287f5 !important;
 }
@@ -301,8 +301,8 @@
     padding: 8px 12px;
 }
 
-/* Modal-Stile */
-.modal {
+/* Modal-Stile - CORRECTED to scope to plugin */
+.agenda-hero-okr-modal {
     background-color: var(--background-primary);
     border-radius: 5px;
     padding: 20px;
@@ -311,7 +311,7 @@
     overflow-x: hidden;
 }
 
-.modal h2 {
+.agenda-hero-okr-modal h2 {
     margin-top: 0;
     margin-bottom: 20px;
     border-bottom: 1px solid var(--background-modifier-border);
@@ -322,7 +322,7 @@
     z-index: 10;
 }
 
-.modal-content {
+.agenda-hero-okr-modal-content {
     overflow-y: auto;
     max-height: calc(80vh - 120px);
     padding-right: 10px;
@@ -334,14 +334,14 @@
     padding-right: 10px;
 }
 
-.modal label {
+.agenda-hero-okr-modal label {
     display: block;
     margin-bottom: 5px;
     font-weight: 600;
 }
 
-.modal input,
-.modal select {
+.agenda-hero-okr-modal input,
+.agenda-hero-okr-modal select {
     width: 100%;
     padding: 8px;
     margin-bottom: 15px;
@@ -350,14 +350,14 @@
     background-color: var(--background-primary);
 }
 
-.modal button {
+.agenda-hero-okr-modal button {
     padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
     margin-right: 8px;
 }
 
-.modal-footer {
+.agenda-hero-okr-modal-footer {
     position: sticky;
     bottom: 0;
     background-color: var(--background-primary);
@@ -366,13 +366,14 @@
     margin-top: 10px;
     z-index: 10;
 }
+
 /* Verbesserte Drag & Drop-Styles für timeGrid */
-.fc-timegrid-slot {
+.agenda-hero-okr-calendar-container .fc-timegrid-slot {
     min-height: 24px;
     position: relative;
 }
 
-.fc-timegrid-event {
+.agenda-hero-okr-calendar-container .fc-timegrid-event {
     cursor: pointer;
     user-select: none;
 }
@@ -382,7 +383,7 @@
 }
 
 /* Verbesserte Highlight-Styles */
-.drag-target-highlight.fc-timegrid-slot {
+.agenda-hero-okr-calendar-container .drag-target-highlight.fc-timegrid-slot {
     background-color: rgba(66, 135, 245, 0.2) !important;
     box-shadow: inset 0 0 0 2px #4287f5 !important;
 }
@@ -422,51 +423,51 @@
     gap: 10px;
 }
 
-.form-group {
+.agenda-hero-okr-form-group {
     margin-bottom: 10px;
 }
 
-.form-group label {
+.agenda-hero-okr-form-group label {
     display: block;
     margin-bottom: 5px;
     font-weight: 600;
 }
 
-.date-time-container {
+.agenda-hero-okr-date-time-container {
     display: flex;
     gap: 10px;
 }
 
-.checkbox-container {
+.agenda-hero-okr-checkbox-container {
     display: flex;
     align-items: center;
     gap: 5px;
 }
 
-.checkbox-container input[type="checkbox"] {
+.agenda-hero-okr-checkbox-container input[type="checkbox"] {
     width: auto;
     margin: 0;
 }
 
-.tags-container {
+.agenda-hero-okr-tags-container {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     margin-top: 5px;
 }
 
-.tag-checkbox-container {
+.agenda-hero-okr-tag-checkbox-container {
     display: flex;
     align-items: center;
     gap: 5px;
 }
 
-.tag-checkbox-container input[type="checkbox"] {
+.agenda-hero-okr-tag-checkbox-container input[type="checkbox"] {
     width: auto;
     margin: 0;
 }
 
-.preview-container {
+.agenda-hero-okr-preview-container {
     background-color: var(--background-secondary);
     padding: 10px;
     border-radius: 4px;
@@ -475,19 +476,19 @@
     word-break: break-all;
 }
 
-.button-container {
+.agenda-hero-okr-button-container {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
     margin-top: 20px;
 }
 
-.submit-button {
+.agenda-hero-okr-submit-button {
     background-color: var(--interactive-accent);
     color: var(--text-on-accent);
 }
 
-.cancel-button {
+.agenda-hero-okr-cancel-button {
     background-color: var(--background-modifier-border);
 }
 
@@ -514,8 +515,8 @@
     opacity: 1 !important;
 }
 
-/* Stile für den Bearbeitungsmodus */
-.modal .checkbox-container {
+/* Stile für den Bearbeitungsmodus - CORRECTED to scope properly */
+.agenda-hero-okr-modal .agenda-hero-okr-checkbox-container {
     margin-bottom: 15px;
     position: relative;
     display: flex;
@@ -526,10 +527,15 @@
     border: 1px solid var(--background-modifier-border);
 }
 
-.modal .checkbox-container input[type="checkbox"] {
+/* FIXED: This was causing the main issue - properly scoped checkbox styling */
+.agenda-hero-okr-container input[type="checkbox"],
+.agenda-hero-okr-edit-form input[type="checkbox"],
+.agenda-hero-okr-task-item input[type="checkbox"],
+.agenda-hero-okr-modal input[type="checkbox"],
+.agenda-hero-okr-checkbox-container input[type="checkbox"] {
     margin-right: 8px;
-    width: 20px !important;
-    height: 20px !important;
+    width: auto !important;
+    height: auto !important;
     opacity: 1 !important;
     cursor: pointer;
     display: inline-block !important;
@@ -539,13 +545,12 @@
     appearance: checkbox !important;
 }
 
-.modal .checkbox-container label {
+.agenda-hero-okr-modal .agenda-hero-okr-checkbox-container label {
     margin-bottom: 0;
     cursor: pointer;
     font-weight: bold;
     color: var(--text-normal);
 }
-
 
 .agenda-hero-okr-urgency-indicator {
     width: 8px;
@@ -556,26 +561,27 @@
     right: 4px;
 }
 
-.high-urgency {
+.agenda-hero-okr-high-urgency {
     background-color: #f44336;
     box-shadow: 0 0 3px #f44336;
 }
 
-.medium-urgency {
+.agenda-hero-okr-medium-urgency {
     background-color: #ff9800;
 }
 
-.low-urgency {
+.agenda-hero-okr-low-urgency {
     background-color: #4caf50;
 }
 
-/* OKR Hierarchy View Styles */
+/* OKR Hierarchy View Styles - vereinheitlicht */
 .agenda-hero-okr-hierarchy-container {
     display: flex;
     flex-direction: column;
     height: 100%;
     padding: 10px;
     overflow: auto;
+    position: relative; /* Wichtig für Layout-Stabilität */
 }
 
 .agenda-hero-okr-header {
@@ -583,6 +589,11 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    padding: 10px;
+    background-color: var(--background-secondary);
+    position: sticky; /* Hält Header sichtbar */
+    top: 0;
+    z-index: 10;
 }
 
 .agenda-hero-okr-buttons {
@@ -603,7 +614,10 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+    margin-top: 10px; /* Abstand zum Header */
+    padding-bottom: 20px; /* Platz am Ende */
 }
+
 
 .agenda-hero-okr-objective-container,
 .agenda-hero-okr-kr-container,
@@ -742,7 +756,7 @@
     margin: 10px 0;
 }
 
-/* Task styling */
+/* Task styling - now properly scoped */
 .agenda-hero-okr-task-list {
     list-style: none;
     padding: 0;
@@ -838,39 +852,39 @@
 }
 
 /* Urgency indicators */
-.urgency-high {
+.agenda-hero-okr-task-item.urgency-high {
     border-left: 4px solid #ff0000 !important;
 }
 
-.urgency-medium {
+.agenda-hero-okr-task-item.urgency-medium {
     border-left: 4px solid #ffa500 !important;
 }
 
-.urgency-low {
+.agenda-hero-okr-task-item.urgency-low {
     border-left: 4px solid #4caf50 !important;
 }
 
 /* Scheduling indicators */
-.auto-scheduled {
+.agenda-hero-okr-task-item.auto-scheduled {
     border-right: 4px solid #3f51b5 !important;
 }
 
-.manually-scheduled {
+.agenda-hero-okr-task-item.manually-scheduled {
     border-right: 4px solid #9c27b0 !important;
 }
 
 /* Conflict indicators */
-.schedule-conflict {
+.agenda-hero-okr-calendar-container .schedule-conflict {
     box-shadow: 0 0 0 2px #f44336 !important;
 }
 
 /* Time block styles */
-.fc-event.time-block {
+.agenda-hero-okr-calendar-container .fc-event.time-block {
     opacity: 0.8;
     border-radius: 2px !important;
 }
 
-.fc-event.time-block.completed {
+.agenda-hero-okr-calendar-container .fc-event.time-block.completed {
     background-image: linear-gradient(45deg, rgba(0,0,0,0.1) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1) 75%, transparent 75%, transparent) !important;
     background-size: 8px 8px !important;
 }
@@ -930,26 +944,16 @@
     margin-bottom: 10px;
 }
 
+
 /* Fix dropdown text visibility issues */
 .agenda-hero-okr-view-button, 
-select, 
-option {
+.agenda-hero-okr-container select, 
+.agenda-hero-okr-container option {
     color: var(--text-normal) !important;
 }
 
-/* Fix toggle switches */
-input[type="checkbox"] {
-    opacity: 1 !important;
-    position: relative !important;
-    appearance: checkbox !important;
-    -webkit-appearance: checkbox !important;
-    width: auto !important;
-    height: auto !important;
-    margin-right: 8px;
-}
-
-/* Fix toggle background rectangles */
-.checkbox-container {
+/* Remove global toggle background rectangles */
+.agenda-hero-okr-checkbox-container {
     background: none !important;
     border: none !important;
 }

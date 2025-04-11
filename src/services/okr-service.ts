@@ -417,10 +417,12 @@ export class OkrService {
     /**
      * Schedule a task using the time block manager
      * @param task The task to schedule
-     * @returns Whether the scheduling was successful
+     * @returns Result object with success status and scheduled time blocks
      */
-    scheduleTask(task: Task): boolean {
-        return this.taskOperationsService.scheduleTask(task);
+    scheduleTask(task: Task): { success: boolean, timeBlocks: TimeBlockInfo[] } {
+        // TaskOperationsService now returns an object, not a boolean
+        const result = this.taskOperationsService.scheduleTask(task);
+        return result; // Just return the result directly
     }
     
     /**
@@ -439,7 +441,14 @@ export class OkrService {
     getTimeBlockManager(): TimeBlockManager {
         return this.timeBlockManager;
     }
-    
+    /**
+     * Alias for getTimeBlockManager() for compatibility
+     * @returns The time block manager instance
+     */
+    getTimeManager(): TimeBlockManager {
+        return this.timeBlockManager;
+    }
+
     /**
      * Import tasks from markdown files
      * Scans the vault for markdown files with task syntax

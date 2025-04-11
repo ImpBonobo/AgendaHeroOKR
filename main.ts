@@ -10,7 +10,7 @@ import * as path from 'path';
 
  
 // Import the Anthropic Batch API
-const { sendBatchRequests } = require('./src/utils/anthropic-batch');
+const { sendBatchRequests } = require('./src/utils/anthropic-integration/anthropic-batch');
 
 // Interfaces
 export interface AgendaHeroOKRSettings {
